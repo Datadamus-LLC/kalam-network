@@ -24,12 +24,12 @@
 | S05 | Env Validation & Docker Production | NOT_STARTED | — | T04, T07 | — |
 | S06 | Developer Guidelines & Code Review | DONE | orchestrator | — | Reference doc, already written |
 | T01 | Initialize Monorepo | DONE | orchestrator | — | Completed: pnpm workspace, docker-compose, tsconfig, .env |
-| T02 | Shared Types & Constants Package | NOT_STARTED | — | T01 | — |
+| T02 | Shared Types & Constants Package | DONE | agent | — | 12 source files: types, constants, utils. tsc passes |
 | T03 | Encryption Library | NOT_STARTED | — | T02 | — |
-| T04 | NestJS Backend Setup | NOT_STARTED | — | T01 | — |
+| T04 | NestJS Backend Setup | DONE | agent | — | 39 files: 8 modules, Hedera service, integrations. Build passes |
 | T05 | Database Schema & Migrations | NOT_STARTED | — | T04, T02 | — |
 | T06 | Hedera Service — Core SDK | NOT_STARTED | — | T04 | Most critical task |
-| T07 | Next.js Frontend Setup | NOT_STARTED | — | T01 | — |
+| T07 | Next.js Frontend Setup | DONE | agent | — | 34 files: routes, stores, hooks, API client, UI components. Build passes |
 | T08 | Hedera Testnet One-Time Setup | NOT_STARTED | — | T06 | — |
 
 ## Phase 1: Identity & Onboarding
@@ -99,3 +99,4 @@
 |-----------|--------|-------|--------|
 | 2026-03-12 | Documentation audit & cleanup | All | Task titles, dependencies, and .env.example corrected to match INDEX.md |
 | 2026-03-12 | Monorepo init | T01, S06 | T01: pnpm workspace with 5 packages, docker-compose, tsconfig.base.json, .env. S06: already written, marked DONE |
+| 2026-03-12 | Parallel scaffold (3 agents) | T02, T04, T07 | T02: 12 src files (types/constants/utils), tsc passes. T04: 39 files, 8 NestJS modules, build passes. T07: 34 files, 9 routes, 3 stores, build passes. All verified together. |

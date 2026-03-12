@@ -33,6 +33,7 @@ Rules:
 - Max 72 characters for first line
 - Body explains WHY, not WHAT (the diff shows what)
 - Reference task ID: `Implements T14` or `Part of S04`
+- NEVER add `Co-Authored-By` lines — no AI attribution in commits
 
 ## Branch Naming
 
