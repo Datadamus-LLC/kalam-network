@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "HEDERA_OPERATOR_ID": "0.0.XXXXX",
+    "HEDERA_OPERATOR_KEY": "302e020100...",
+    "HEDERA_NETWORK": "testnet",
+    "DB_HOST": "localhost",
+    "DB_PORT": "5432",
+    "DB_PASSWORD": "your_local_password",
+    "REDIS_HOST": "localhost",
+    "REDIS_PORT": "6379",
+    "JWT_SECRET": "your-local-dev-secret-change-in-production"
+  }
+}

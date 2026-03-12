@@ -1,0 +1,34 @@
+# Test infrastructure — used by /dev-test and /dev-validate-all
+# Start with: docker compose -f docker-compose.test.yml up -d
+# Stop with: docker compose -f docker-compose.test.yml down
+
+version: '3.8'
+
+services:
+  test-db:
+    image: postgres:16-alpine
+    container_name: hedera-social-test-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: hedera_social_test
+    tmpfs:
+      - /var/lib/postgresql/data  # RAM disk — fast, disposable
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d hedera_social_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  test-redis:
+    image: redis:7-alpine
+    container_name: hedera-social-test-redis
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 10

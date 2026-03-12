@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+.env.test
+
+# Claude Code local settings (machine-specific, has secrets)
+.claude/settings.local.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+*.log
+logs/
+
+# Docker volumes
+postgres-data/
+redis-data/
+
+# Temporary
+tmp/
+temp/
+
+# FUSE filesystem artifacts
+.fuse_hidden*

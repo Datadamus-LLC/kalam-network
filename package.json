@@ -1,0 +1,21 @@
+{
+  "name": "hedera-social",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blockchain-native social platform built on Hedera",
+  "scripts": {
+    "dev:api": "pnpm --filter @hedera-social/api start:dev",
+    "dev:web": "pnpm --filter @hedera-social/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @hedera-social/api typeorm migration:run -d src/database/data-source.ts",
+    "db:generate": "pnpm --filter @hedera-social/api typeorm migration:generate -d src/database/data-source.ts",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
