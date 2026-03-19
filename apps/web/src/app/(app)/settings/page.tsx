@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PinModal } from "@/components/ui/PinModal";
 import { createTimeout, debounce } from "@/lib/timers";
+import { getStoredPrivateKey } from "@/lib/crypto-utils";
 
 const HASHSCAN_BASE_URL = `${env.NEXT_PUBLIC_HASHSCAN_URL}/${env.NEXT_PUBLIC_HEDERA_NETWORK}`;
 
@@ -697,7 +698,6 @@ export default function SettingsPage() {
                             size="sm"
                             className="rounded-full h-[32px] px-3 text-[12px] border-primary/30 text-primary hover:bg-primary/10"
                             onClick={() => {
-                              const { getStoredPrivateKey } = require('@/lib/crypto-utils') as typeof import('@/lib/crypto-utils');
                               const pk = getStoredPrivateKey(user.hederaAccountId ?? undefined);
                               if (pk) {
                                 setPendingPrivateKey(Buffer.from(pk).toString('base64'));

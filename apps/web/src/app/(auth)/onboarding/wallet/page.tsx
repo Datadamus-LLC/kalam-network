@@ -36,6 +36,7 @@ export default function WalletPage() {
         status: 'pending_kyc',
         accountType: user?.accountType ?? null,
         displayName: user?.displayName ?? null,
+        username: user?.username ?? null,
         kycLevel: user?.kycLevel ?? null,
       });
       setOnboardingStep('submit_kyc');

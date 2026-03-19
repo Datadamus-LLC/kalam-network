@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { RiSearchLine, RiCloseLine } from '@remixicon/react';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/auth.store';
 
 type Filter = 'all' | 'kyc' | 'org';
+
+interface SearchUser {
+  hederaAccountId: string;
+  displayName?: string | null;
+  username?: string | null;
+  accountType?: 'individual' | 'business';
+}
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -51,7 +58,7 @@ export default function DiscoverPage() {
       query.trim()
         ? api.searchUsers(query.trim(), filter === 'all' ? undefined : filter)
         : Promise.resolve({ users: [] }),
-    select: (data) => data.users ?? [],
+    select: (data) => (data.users ?? []) as SearchUser[],
     enabled: query.trim().length > 0,
   });
 
@@ -59,7 +66,7 @@ export default function DiscoverPage() {
   useEffect(() => {
     if (!currentUser?.hederaAccountId || results.length === 0) return;
     const myId = currentUser.hederaAccountId;
-    results.forEach((user: { hederaAccountId: string }) => {
+    results.forEach((user) => {
       if (user.hederaAccountId === myId) return;
       if (followState[user.hederaAccountId] !== undefined) return;
       api.checkIsFollowing(myId, user.hederaAccountId)
@@ -127,8 +134,7 @@ export default function DiscoverPage() {
             <p className="text-[14px] text-muted-foreground text-center py-8">No results for &quot;{query}&quot;</p>
           ) : (
             <div className="space-y-1">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(results as any[]).map((user: { hederaAccountId: string; displayName?: string; username?: string | null; accountType?: 'individual' | 'business' }) => {
+              {results.map((user) => {
                 const isOwnProfile = currentUser?.hederaAccountId === user.hederaAccountId;
                 const state = followState[user.hederaAccountId];
                 const isFollowing = state === 'following';

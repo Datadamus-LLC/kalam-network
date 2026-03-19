@@ -257,7 +257,7 @@ export function NewConversationDialog({
                 <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-[12px] px-4 py-3 z-10">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <RiUserLine size={14} />
-                    <span className="text-[13px]">No users found for "{searchQuery}"</span>
+                    <span className="text-[13px]">No users found for &quot;{searchQuery}&quot;</span>
                   </div>
                 </div>
               )}

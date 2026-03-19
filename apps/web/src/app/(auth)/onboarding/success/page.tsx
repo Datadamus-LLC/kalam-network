@@ -108,7 +108,7 @@ export default function SuccessPage() {
           <RiCheckboxCircleLine size={32} className="text-primary" />
         </div>
         <h1 className="text-[24px] font-extrabold text-foreground mb-1">
-          You're all set
+          You&apos;re all set
         </h1>
         <p className="text-[14px] text-muted-foreground">
           Your blockchain identity is ready

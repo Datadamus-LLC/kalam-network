@@ -39,6 +39,30 @@ interface RequestOptions {
   headers?: Record<string, string>;
 }
 
+interface RawPostApiResponse {
+  id?: string;
+  author?: {
+    accountId?: string;
+    displayName?: string | null;
+    avatarUrl?: string | null;
+    accountType?: string;
+  };
+  authorAccountId?: string;
+  authorDisplayName?: string | null;
+  authorAvatarUrl?: string | null;
+  authorAccountType?: string;
+  text?: string;
+  content?: string;
+  likeCount?: number;
+  likes?: number;
+  commentCount?: number;
+  replies?: number;
+  isLiked?: boolean;
+  hcsTopicId?: string | null;
+  hcsSequenceNumber?: number | null;
+  createdAt?: string;
+}
+
 export interface Post {
   id: string;
   authorAccountId: string;
@@ -401,8 +425,7 @@ class ApiClient {
   // ─── Feed / Posts ─────────────────────────────────────────────────────────
 
   /** Map a backend PostResponseDto to the frontend Post shape. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private mapPost(p: any): Post {
+  private mapPost(p: RawPostApiResponse): Post {
     return {
       id: p.id ?? '',
       authorAccountId: p.author?.accountId ?? p.authorAccountId ?? '',
@@ -421,7 +444,7 @@ class ApiClient {
 
   private mapFeed(raw: { posts: unknown[]; nextCursor?: string | null; hasMore?: boolean }): { posts: Post[]; nextCursor?: string } {
     return {
-      posts: (raw?.posts ?? []).map((p) => this.mapPost(p as Parameters<typeof this.mapPost>[0])),
+      posts: (raw?.posts ?? []).map((p) => this.mapPost(p as RawPostApiResponse)),
       nextCursor: raw?.nextCursor ?? undefined,
     };
   }

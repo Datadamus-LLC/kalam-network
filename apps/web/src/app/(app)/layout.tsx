@@ -34,6 +34,7 @@ export default function AppLayoutWrapper({ children }: { children: ReactNode }) 
           status: 'active',
           accountType: profile.accountType as 'individual' | 'business',
           displayName: profile.displayName,
+          username: null,
           kycLevel: profile.kycLevel as 'basic' | 'enhanced' | 'institutional' | null,
         });
       })

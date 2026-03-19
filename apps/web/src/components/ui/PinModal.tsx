@@ -96,7 +96,7 @@ export function PinModal({ mode, onSubmit, onCancel, error, isLoading }: PinModa
 
           {mode === 'set' && (
             <p className="text-[11px] text-muted-foreground px-1">
-              Remember this PIN — you'll need it when logging in on new devices. It cannot be recovered.
+              Remember this PIN — you&apos;ll need it when logging in on new devices. It cannot be recovered.
             </p>
           )}
         </div>
