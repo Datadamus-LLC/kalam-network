@@ -756,6 +756,8 @@ export class TamamCustodyService implements OnModuleInit {
     body?: Record<string, unknown>,
   ): Promise<T> {
     const url = `${this.apiUrl!}${path}`;
+    // Unix timestamp in seconds. Tamam API typically allows ±30s clock skew.
+    // Ensure server NTP sync is configured in production.
     const timestamp = String(Math.floor(Date.now() / 1000));
     const serializedBody =
       body !== undefined ? JSON.stringify(body) : undefined;

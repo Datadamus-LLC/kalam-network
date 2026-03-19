@@ -144,10 +144,11 @@ export class MessagingService {
       nonce,
     };
 
-    // Step 5: Encrypt the payload with AES-256-GCM using a derived key
-    // A deterministic encryption key is derived from the conversation's currentKeyId.
-    // For full E2E encryption, the client handles encryption using the actual symmetric key
-    // (see encryptedContent parameter — sent pre-encrypted when the client has the key).
+    // Step 5: Encrypt the payload with AES-256-GCM using a server-derived key.
+    // This is HCS transport encryption (server-controlled), NOT E2E. The server
+    // can decrypt these messages. The real E2E encryption is the client-side
+    // `encryptedContent` field, which is encrypted with the conversation symmetric key
+    // that only participants hold.
     let encryptedPayload: Buffer;
     try {
       encryptedPayload = this.encryptPayload(
@@ -494,12 +495,18 @@ export class MessagingService {
   // ---------------------------------------------------------------------------
 
   /**
-   * Encrypt a plaintext string using AES-256-GCM.
+   * HCS Transport Encryption (server-controlled layer).
+   *
+   * Encrypts message payload before submitting to HCS using a server-derived
+   * key (SHA256 of keyId). This is NOT end-to-end encrypted — the server
+   * can decrypt these messages. The real E2E layer is the client-side
+   * `encryptedContent` field, encrypted with the conversation symmetric key
+   * that only participants hold.
+   *
+   * Purpose: prevents casual HCS observers from reading message metadata
+   * without platform credentials.
    *
    * Returns a Buffer containing: IV (12 bytes) + ciphertext + authTag (16 bytes).
-   *
-   * A SHA-256 digest of the conversation's keyId is used as the encryption key.
-   * For full E2E encryption, the client encrypts using the actual per-conversation symmetric key.
    */
   private encryptPayload(plaintext: string, keySource: string): Buffer {
     // Derive a 32-byte key from the keySource using SHA-256
