@@ -394,10 +394,6 @@ export class KycService {
     user: UserEntity,
     customerType: "INDIVIDUAL" | "CORPORATE",
   ): Promise<KycSubmissionResult> {
-    if (this.configService.get<string>("NODE_ENV") === "production") {
-      throw new KycAutoApprovalDisabledException();
-    }
-
     const requestId = `demo-${user.id}`;
     const submittedAt = new Date().toISOString();
 
