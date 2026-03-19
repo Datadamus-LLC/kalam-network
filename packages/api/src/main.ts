@@ -1,6 +1,8 @@
 import { NestFactory } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import { ValidationPipe, Logger } from "@nestjs/common";
+import { DataSource } from "typeorm";
+import { getDataSourceToken } from "@nestjs/typeorm";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
@@ -8,8 +10,16 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = new Logger("Bootstrap");
 
-  // TODO: Register GlobalExceptionFilter when implemented
-  // app.useGlobalFilters(new GlobalExceptionFilter());
+  // Run pending database migrations on startup
+  const dataSource = app.get<DataSource>(getDataSourceToken());
+  const pending = await dataSource.showMigrations();
+  if (pending) {
+    logger.log("Running pending database migrations…");
+    await dataSource.runMigrations({ transaction: "each" });
+    logger.log("Database migrations complete");
+  } else {
+    logger.log("Database schema up to date — no migrations to run");
+  }
 
   // Global validation pipe
   app.useGlobalPipes(

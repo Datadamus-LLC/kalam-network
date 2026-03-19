@@ -58,7 +58,10 @@ export const AppDataSource = new DataSource({
     BroadcastMessageEntity,
     BroadcastSubscriptionEntity,
   ],
-  migrations: ["src/database/migrations/**/*.ts"],
+  migrations:
+    process.env.NODE_ENV === "production"
+      ? ["dist/database/migrations/**/*.js"]
+      : ["src/database/migrations/**/*.ts"],
   subscribers: [],
 });
 
