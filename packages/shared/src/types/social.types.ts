@@ -61,6 +61,7 @@ export interface Post {
     kycVerified: boolean;
     /** Verified business badge tier — null for individual accounts */
     badgeTier: BadgeTier | null;
+    accountType: 'individual' | 'business';
   };
   text: string;
   media: PostMedia[];

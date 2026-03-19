@@ -1224,6 +1224,7 @@ export class PostsService {
         avatarUrl: author?.avatarIpfsCid
           ? `${this.configService.get<string>("pinata.gatewayUrl", "")}/${author.avatarIpfsCid}`
           : null,
+        accountType: (author?.accountType as 'individual' | 'business') ?? 'individual',
       },
       text: post.contentText,
       media,
