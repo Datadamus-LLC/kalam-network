@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar';
 import { api, ApiError } from '@/lib/api';
+import { RiPriceTag3Line, RiGlobalLine, RiVerifiedBadgeLine } from '@remixicon/react';
 
 interface OrgData {
   id: string;
@@ -29,6 +30,13 @@ interface OrgData {
   }>;
 }
 
+interface RecentBroadcast {
+  id: string;
+  content: string;
+  createdAt: string;
+  sequenceNumber: number | null;
+}
+
 /** Role badge style per spec */
 function roleBadgeCls(role: string): string {
   switch (role.toLowerCase()) {
@@ -38,6 +46,14 @@ function roleBadgeCls(role: string): string {
     case 'viewer':  return 'bg-white/[0.03] text-muted-foreground/50';
     default:        return 'bg-white/[0.05] text-muted-foreground';
   }
+}
+
+function RoleBadge({ role }: { role: string }) {
+  return (
+    <span className={cn('px-[8px] py-[2px] rounded-full text-[11px] font-semibold capitalize', roleBadgeCls(role))}>
+      {role}
+    </span>
+  );
 }
 
 /** KYB status badge */
@@ -71,6 +87,8 @@ export default function OrganizationPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createError, setCreateError] = useState<string | null>(null);
+  const [recentBroadcasts, setRecentBroadcasts] = useState<RecentBroadcast[]>([]);
+  const [broadcastsLoading, setBroadcastsLoading] = useState(false);
 
   const loadOrg = useCallback(async () => {
     setIsLoading(true);
@@ -78,6 +96,22 @@ export default function OrganizationPage() {
     try {
       const data = await api.getMyOrganization();
       setOrg(data as OrgData | null);
+
+      if (data) {
+        // Fetch recent broadcasts for this org (non-blocking)
+        setBroadcastsLoading(true);
+        api.getBroadcastFeed(3)
+          .then((result) => {
+            setRecentBroadcasts(result.messages.slice(0, 3).map((m) => ({
+              id: m.id,
+              content: m.content,
+              createdAt: m.createdAt,
+              sequenceNumber: m.sequenceNumber ?? null,
+            })));
+          })
+          .catch(() => { /* non-critical */ })
+          .finally(() => setBroadcastsLoading(false));
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
         setOrg(null);
@@ -209,7 +243,7 @@ export default function OrganizationPage() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="text-[20px] font-extrabold text-foreground truncate">{org.name}</h1>
@@ -236,14 +270,6 @@ export default function OrganizationPage() {
                     </a>
                   )}
                 </div>
-
-                {/* Action buttons — outline pill */}
-                <Link
-                  href="/organization/settings"
-                  className="flex-shrink-0 flex items-center h-[34px] px-[16px] rounded-full border border-border text-[13px] font-semibold text-foreground hover:bg-white/[0.06] transition-colors"
-                >
-                  Settings
-                </Link>
               </div>
             </div>
           </div>
@@ -270,59 +296,112 @@ export default function OrganizationPage() {
           })}
         </div>
 
-        {/* Members preview */}
-        <div className="px-[18px] py-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[13px] font-bold text-muted-foreground uppercase tracking-wider">
-              Members ({org.members.length})
-            </p>
-            <Link
-              href="/organization/members"
-              className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Manage →
-            </Link>
+        {/* ── Overview Content ──────────────────────────────── */}
+        <div className="space-y-5 p-5">
+
+          {/* Org Profile Card — bio, category, website, HCS */}
+          {(org.bio || org.category || org.website || org.hcsAttestationTopic) && (
+            <div className="rounded-[14px] border border-border bg-white/[0.02] p-4 space-y-3">
+              {org.bio && (
+                <p className="text-[14px] text-muted-foreground leading-relaxed">{org.bio}</p>
+              )}
+              <div className="flex flex-wrap gap-x-5 gap-y-2 text-[13px]">
+                {org.category && (
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <RiPriceTag3Line size={13} />
+                    <span>{org.category}</span>
+                  </div>
+                )}
+                {org.website && (
+                  <a
+                    href={org.website.startsWith('http') ? org.website : `https://${org.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-primary hover:opacity-80 transition-opacity"
+                  >
+                    <RiGlobalLine size={13} />
+                    <span className="truncate max-w-[200px]">{org.website.replace(/^https?:\/\//, '')}</span>
+                  </a>
+                )}
+              </div>
+              {org.hcsAttestationTopic && (
+                <p className="text-[11px] text-muted-foreground/50 font-mono flex items-center gap-1">
+                  <RiVerifiedBadgeLine size={11} />
+                  HCS: {org.hcsAttestationTopic}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Recent Broadcasts */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[.05em]">
+                Recent Broadcasts
+              </h3>
+              <Link
+                href={`/broadcasts?orgId=${org.id}`}
+                className="text-[12px] text-primary hover:opacity-80 transition-opacity"
+              >
+                See all →
+              </Link>
+            </div>
+            {broadcastsLoading ? (
+              <div className="text-[13px] text-muted-foreground/60">Loading…</div>
+            ) : recentBroadcasts.length === 0 ? (
+              <div className="rounded-[12px] border border-dashed border-border/60 p-4 text-center">
+                <p className="text-[13px] text-muted-foreground">No broadcasts yet</p>
+                <Link
+                  href={`/broadcasts?orgId=${org.id}`}
+                  className="text-[12px] text-primary mt-1 block hover:opacity-80"
+                >
+                  Publish your first broadcast →
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recentBroadcasts.map((b) => (
+                  <div key={b.id} className="rounded-[10px] border border-border bg-white/[0.02] p-3">
+                    <p className="text-[13px] text-foreground line-clamp-2 leading-relaxed">{b.content}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1.5">
+                      {new Date(b.createdAt).toLocaleDateString()} · Seq #{b.sequenceNumber ?? '—'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {org.members.length === 0 ? (
-            <p className="text-[14px] text-muted-foreground text-center py-8">No members yet.</p>
-          ) : (
-            <div className="divide-y divide-border border border-border rounded-[14px] overflow-hidden">
-              {org.members.map((member) => {
-                const primaryName = member.username
-                  ? `@${member.username}`
-                  : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
-                const secondaryName = member.username && (member.displayName ?? member.hederaAccountId)
-                  ? (member.displayName ?? member.hederaAccountId)
-                  : member.username && !member.displayName && member.hederaAccountId
-                    ? member.hederaAccountId
-                    : null;
-                return (
-                  <div key={member.userId} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.018] transition-colors">
-                    <div>
-                      <p className="text-[14px] font-semibold text-foreground">
-                        {primaryName}
-                      </p>
-                      {secondaryName && (
-                        <p className="text-[12px] text-muted-foreground font-mono">{secondaryName}</p>
-                      )}
+          {/* Members preview */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[.05em]">
+                Members ({org.members.length})
+              </h3>
+              <Link
+                href="/organization/members"
+                className="text-[12px] text-primary hover:opacity-80 transition-opacity"
+              >
+                Manage →
+              </Link>
+            </div>
+            <div className="space-y-1">
+              {org.members.slice(0, 5).map((m) => (
+                <div key={m.userId} className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-white/[0.08] flex items-center justify-center text-[11px] font-bold text-foreground flex-shrink-0">
+                      {(m.displayName || m.hederaAccountId || '?')[0]?.toUpperCase()}
                     </div>
-                    <span className={cn('px-[8px] py-[2px] rounded-full text-[11px] font-semibold capitalize', roleBadgeCls(member.role))}>
-                      {member.role}
+                    <span className="text-[13px] font-medium text-foreground">
+                      {m.username ? `@${m.username}` : (m.displayName ?? 'Member')}
                     </span>
                   </div>
-                );
-              })}
+                  <RoleBadge role={m.role} />
+                </div>
+              ))}
             </div>
-          )}
+          </div>
 
-          {/* HCS attestation */}
-          {org.hcsAttestationTopic && (
-            <div className="mt-4 border border-border rounded-[14px] p-3 text-[12px] text-muted-foreground font-mono truncate">
-              HCS: {org.hcsAttestationTopic}
-              {org.hcsAttestationSeq != null && ` · Seq #${org.hcsAttestationSeq}`}
-            </div>
-          )}
         </div>
       </div>
 
