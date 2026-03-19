@@ -44,6 +44,7 @@ export interface Post {
   authorAccountId: string;
   authorDisplayName: string | null;
   authorAvatarUrl: string | null;
+  authorAccountType: 'individual' | 'business';
   content: string;
   likeCount: number;
   commentCount: number;
@@ -407,6 +408,7 @@ class ApiClient {
       authorAccountId: p.author?.accountId ?? p.authorAccountId ?? '',
       authorDisplayName: p.author?.displayName ?? p.authorDisplayName ?? null,
       authorAvatarUrl: p.author?.avatarUrl ?? p.authorAvatarUrl ?? null,
+      authorAccountType: (p.author?.accountType ?? p.authorAccountType ?? 'individual') as 'individual' | 'business',
       content: p.text ?? p.content ?? '',
       likeCount: p.likeCount ?? p.likes ?? 0,
       commentCount: p.commentCount ?? p.replies ?? 0,

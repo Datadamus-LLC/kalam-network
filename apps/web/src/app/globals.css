@@ -14,7 +14,7 @@
   --color-popover-foreground: oklch(0.985 0 0);
 
   /* Primary — lemon yellow #f0d060 */
-  --color-primary: #f0d060;
+  --color-primary: #fffe54;
   --color-primary-foreground: #000000;
 
   /* Secondary */
@@ -40,7 +40,7 @@
   /* Sidebar */
   --color-sidebar: oklch(0.205 0 0);
   --color-sidebar-foreground: oklch(0.985 0 0);
-  --color-sidebar-primary: #f0d060;
+  --color-sidebar-primary: #fffe54;
   --color-sidebar-primary-foreground: oklch(0.145 0 0);
   --color-sidebar-accent: oklch(0.269 0 0);
   --color-sidebar-accent-foreground: oklch(0.985 0 0);

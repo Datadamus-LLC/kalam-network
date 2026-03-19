@@ -11,6 +11,7 @@ interface Post {
   authorAccountId: string;
   authorDisplayName?: string | null;
   authorAvatarUrl?: string | null;
+  authorAccountType?: 'individual' | 'business';
   content: string;
   createdAt: string;
   likeCount?: number;
@@ -151,6 +152,7 @@ export function PostList({ feedType }: PostListProps) {
             displayName: post.authorDisplayName ?? null,
             avatarUrl: post.authorAvatarUrl ?? null,
             badgeTier: null,
+            accountType: post.authorAccountType ?? 'individual',
           }}
           text={post.content}
           createdAt={post.createdAt}

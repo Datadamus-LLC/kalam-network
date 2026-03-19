@@ -1,0 +1,42 @@
+export declare const HCS_TOPIC_CREATE_COST_USD = 0.01;
+export declare const HCS_MESSAGE_COST_USD = 0.0008;
+export declare const HCS_TOPIC_UPDATE_COST_USD = 0.001;
+export declare const HTS_TOKEN_CREATE_COST_USD = 1;
+export declare const HTS_MINT_COST_USD = 0.05;
+export declare const HTS_TRANSFER_COST_USD = 0.001;
+export declare const HTS_FREEZE_COST_USD = 0.001;
+export declare const HTS_WIPE_COST_USD = 0.001;
+export declare const ACCOUNT_CREATE_COST_USD = 0.05;
+export declare const ONBOARDING_COST_USD = 0.12;
+export declare const HCS_MESSAGE_MAX_BYTES = 1024;
+/** After AES-256-GCM encryption overhead (~28 bytes: 16 tag + 12 nonce), available for plaintext */
+export declare const HCS_ENCRYPTED_PAYLOAD_MAX_BYTES = 996;
+/** Approximate max text length for text-only messages after JSON overhead */
+export declare const MAX_TEXT_MESSAGE_CHARS = 800;
+export declare const MAX_GROUP_MEMBERS_INDIVIDUAL = 256;
+export declare const MAX_GROUP_MEMBERS_BUSINESS = 1024;
+export declare const MAX_POST_TEXT_CHARS = 800;
+export declare const MAX_POST_MEDIA_COUNT = 4;
+export declare const MAX_BIO_LENGTH = 256;
+export declare const MAX_DISPLAY_NAME_LENGTH = 64;
+export declare const MAX_PAYMENT_NOTE_LENGTH = 256;
+export declare const MAX_LOCATION_LENGTH = 128;
+export declare const OTP_LENGTH = 6;
+export declare const OTP_EXPIRY_SECONDS = 300;
+export declare const OTP_RESEND_COOLDOWN_SECONDS = 60;
+export declare const OTP_MAX_ATTEMPTS = 5;
+export declare const TYPING_INDICATOR_TIMEOUT_MS = 5000;
+export declare const WS_HEARTBEAT_INTERVAL_MS = 30000;
+export declare const MIRROR_NODE_POLL_INTERVAL_MS = 2000;
+export declare const DEFAULT_PAGE_SIZE = 20;
+export declare const MAX_PAGE_SIZE = 100;
+export declare const DEFAULT_MESSAGE_PAGE_SIZE = 50;
+export declare const MAX_IMAGE_SIZE_BYTES: number;
+export declare const MAX_VIDEO_SIZE_BYTES: number;
+export declare const MAX_VOICE_SIZE_BYTES: number;
+export declare const MAX_FILE_SIZE_BYTES: number;
+export declare const ALLOWED_IMAGE_TYPES: string[];
+export declare const ALLOWED_VIDEO_TYPES: string[];
+export declare const ALLOWED_VOICE_TYPES: string[];
+export declare const ALLOWED_FILE_TYPES: string[];
+//# sourceMappingURL=hedera.constants.d.ts.map

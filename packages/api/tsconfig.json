@@ -3,7 +3,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist",
@@ -11,11 +13,18 @@
     "rootDir": "./src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "paths": {
-      "@hedera-social/shared": ["../../packages/shared/src"],
-      "@hedera-social/shared/*": ["../../packages/shared/src/*"]
-    }
+    "paths": {},
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "test", "**/*spec.ts", "**/*test.ts", "**/__tests__/**"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "**/*spec.ts",
+    "**/*test.ts",
+    "**/__tests__/**"
+  ]
 }
