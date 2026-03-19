@@ -16,6 +16,7 @@ import {
   KycInvalidStateException,
   KycCallbackInvalidException,
   KycRecordNotFoundException,
+  KycAutoApprovalDisabledException,
 } from "../exceptions/kyc.exception";
 import { UserNotFoundException } from "../exceptions/wallet-creation.exception";
 import { OnboardingService } from "./onboarding.service";
@@ -379,14 +380,22 @@ export class KycService {
   }
 
   /**
-   * Auto-approve KYC when Mirsad AI is disabled (demo / development mode).
+   * Auto-approve KYC when Mirsad AI is disabled (development / staging mode only).
    * Runs the full post-KYC onboarding (DID NFT mint + HCS topics) and
    * returns a synthetic submission result.
+   *
+   * This method is intentionally blocked in production to prevent bypassing
+   * identity verification. Set MIRSAD_KYC_ENABLED=true and configure valid
+   * Mirsad AI credentials before deploying to production.
    */
   private async autoApproveForDemo(
     user: UserEntity,
     customerType: "INDIVIDUAL" | "CORPORATE",
   ): Promise<KycSubmissionResult> {
+    if (process.env.NODE_ENV === 'production') {
+      throw new KycAutoApprovalDisabledException();
+    }
+
     const requestId = `demo-${user.id}`;
     const submittedAt = new Date().toISOString();
 

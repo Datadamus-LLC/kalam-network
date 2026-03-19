@@ -86,7 +86,7 @@ export default () => {
       enabled: env.MIRSAD_KYC_ENABLED,
     },
 
-    // Encryption master key for local key storage (hackathon fallback)
+    // Encryption master key for local key storage fallback (AES-256-GCM)
     encryptionMasterKey: env.ENCRYPTION_MASTER_KEY,
 
     tamam: {

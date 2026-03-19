@@ -144,6 +144,31 @@ export class OnboardingException extends HttpException {
 }
 
 /**
+ * Thrown when KYC auto-approval is attempted in a production environment.
+ * Auto-approval is only permitted in development/staging with Mirsad AI disabled.
+ * Configure MIRSAD_KYC_ENABLED=true and supply valid MIRSAD_KYC_API_URL credentials.
+ */
+export class KycAutoApprovalDisabledException extends HttpException {
+  public readonly code = 'KYC_AUTO_APPROVAL_DISABLED';
+
+  constructor() {
+    super(
+      {
+        success: false,
+        data: null,
+        error: {
+          code: 'KYC_AUTO_APPROVAL_DISABLED',
+          message:
+            'KYC auto-approval is disabled in production. Configure Mirsad AI credentials.',
+        },
+        timestamp: new Date().toISOString(),
+      },
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
+  }
+}
+
+/**
  * Thrown when KYC status check finds the user has no pending KYC record.
  */
 export class KycRecordNotFoundException extends HttpException {

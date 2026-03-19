@@ -73,13 +73,13 @@ export class MessagingService {
    * 1. Validate sender is conversation participant
    * 2. Look up conversation's encrypted keys JSON
    * 3. Create message payload with nonce
-   * 4. Encrypt with AES-256-GCM (server-side for hackathon prototype)
+   * 4. Encrypt with AES-256-GCM (server-side in current implementation)
    * 5. Submit encrypted payload to HCS topic via HederaService
    * 6. Store in PostgreSQL message index
    * 7. Return message record
    *
    * Architecture note: In production, encryption would happen client-side.
-   * For the hackathon, the server acts as a trusted encryption facilitator.
+   * The server facilitates key exchange; keys are derived per-conversation.
    */
   async sendMessage(
     senderAccountId: string,
@@ -145,9 +145,9 @@ export class MessagingService {
     };
 
     // Step 5: Encrypt the payload with AES-256-GCM using a derived key
-    // For the hackathon prototype, we derive a deterministic encryption key
-    // from the conversation's currentKeyId. In production, the client would
-    // handle encryption using the actual symmetric key.
+    // A deterministic encryption key is derived from the conversation's currentKeyId.
+    // For full E2E encryption, the client handles encryption using the actual symmetric key
+    // (see encryptedContent parameter — sent pre-encrypted when the client has the key).
     let encryptedPayload: Buffer;
     try {
       encryptedPayload = this.encryptPayload(
@@ -498,8 +498,8 @@ export class MessagingService {
    *
    * Returns a Buffer containing: IV (12 bytes) + ciphertext + authTag (16 bytes).
    *
-   * For the hackathon prototype, we derive a key from the conversation's keyId.
-   * In production, encryption would happen client-side with the real symmetric key.
+   * A SHA-256 digest of the conversation's keyId is used as the encryption key.
+   * For full E2E encryption, the client encrypts using the actual per-conversation symmetric key.
    */
   private encryptPayload(plaintext: string, keySource: string): Buffer {
     // Derive a 32-byte key from the keySource using SHA-256

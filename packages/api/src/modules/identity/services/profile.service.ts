@@ -84,7 +84,7 @@ export interface SearchResultItem {
  * - Get public profile by Hedera Account ID
  * - Get authenticated user's own profile (includes private fields)
  * - Update authenticated user's profile (with DID NFT refresh)
- * - Search users by display name (simple LIKE query for hackathon)
+ * - Search users by display name (PostgreSQL ILIKE query — consider Meilisearch for production at scale)
  *
  * DID NFT Refresh Flow (on profile update):
  * 1. Build new HIP-412 metadata with updated fields
@@ -344,8 +344,8 @@ export class ProfileService {
 
   /**
    * Search users by display name.
-   * Simple LIKE query on the displayName column.
-   * For hackathon — in production would use Meilisearch or Elasticsearch.
+   * PostgreSQL ILIKE query on the displayName column.
+   * Consider Meilisearch or Elasticsearch for production at scale.
    *
    * @param query - Search term (minimum 2 characters)
    * @param limit - Maximum results to return (default 20, max 100)
@@ -370,7 +370,7 @@ export class ProfileService {
     );
 
     // Users with wallets (active or pending_kyc) should be discoverable.
-    // In hackathon mode, most users are pending_kyc since KYC isn't completed.
+    // Include pending_kyc users in search results (KYC not yet completed).
     const searchableStatuses = In(["active", "pending_kyc"]);
 
     // Build search conditions: displayName, username, + fallback to accountId or email
@@ -586,7 +586,7 @@ export class ProfileService {
 
     // Step 3: Freeze new NFT (soulbound)
     // Note: freezeToken in DidNftService.mintDidNft already handles freezing,
-    // but if that failed (hackathon-tolerant), we attempt again here.
+    // but if that failed (permissive — retry on next profile update), we attempt again here.
     // DidNftService.mintDidNft already does freeze internally.
 
     return {
