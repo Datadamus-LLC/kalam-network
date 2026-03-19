@@ -3,7 +3,12 @@ import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import nacl from "tweetnacl";
-import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  randomBytes,
+  createHash,
+} from "crypto";
 import { UserEntity } from "../../../database/entities/user.entity";
 import { HederaService } from "../../hedera/hedera.service";
 import { TamamCustodyService } from "../../integrations/tamam-custody/tamam-custody.service";
@@ -187,7 +192,9 @@ export class WalletService {
   async storeKeyBackup(userId: string, encryptedBackup: string): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new UserNotFoundException(userId);
-    await this.userRepository.update(userId, { encryptedPrivateKeyBackup: encryptedBackup });
+    await this.userRepository.update(userId, {
+      encryptedPrivateKeyBackup: encryptedBackup,
+    });
   }
 
   /**
@@ -206,11 +213,16 @@ export class WalletService {
    * This enables new-device access without re-keying conversations.
    */
   private wrapPrivateKey(privateKeyBase64: string): string {
-    const wrapKeyHex = this.configService.get<string>("ENCRYPTION_WRAP_KEY") ?? "";
-    const wrapKey = createHash("sha256").update(wrapKeyHex || "kalam-dev-wrap-key-change-in-prod").digest();
+    const wrapKeyHex = this.configService.getOrThrow<string>("ENCRYPTION_WRAP_KEY");
+    const wrapKey = createHash("sha256")
+      .update(wrapKeyHex)
+      .digest();
     const iv = randomBytes(12);
     const cipher = createCipheriv("aes-256-gcm", wrapKey, iv);
-    const encrypted = Buffer.concat([cipher.update(privateKeyBase64, "utf8"), cipher.final()]);
+    const encrypted = Buffer.concat([
+      cipher.update(privateKeyBase64, "utf8"),
+      cipher.final(),
+    ]);
     const tag = cipher.getAuthTag();
     return JSON.stringify({
       iv: iv.toString("base64"),
@@ -221,12 +233,25 @@ export class WalletService {
 
   /** Unwrap a server-encrypted private key. */
   private unwrapPrivateKey(wrapped: string): string {
-    const wrapKeyHex = this.configService.get<string>("ENCRYPTION_WRAP_KEY") ?? "";
-    const wrapKey = createHash("sha256").update(wrapKeyHex || "kalam-dev-wrap-key-change-in-prod").digest();
-    const { iv, ciphertext, tag } = JSON.parse(wrapped) as { iv: string; ciphertext: string; tag: string };
-    const decipher = createDecipheriv("aes-256-gcm", wrapKey, Buffer.from(iv, "base64"));
+    const wrapKeyHex = this.configService.getOrThrow<string>("ENCRYPTION_WRAP_KEY");
+    const wrapKey = createHash("sha256")
+      .update(wrapKeyHex)
+      .digest();
+    const { iv, ciphertext, tag } = JSON.parse(wrapped) as {
+      iv: string;
+      ciphertext: string;
+      tag: string;
+    };
+    const decipher = createDecipheriv(
+      "aes-256-gcm",
+      wrapKey,
+      Buffer.from(iv, "base64"),
+    );
     decipher.setAuthTag(Buffer.from(tag, "base64"));
-    return decipher.update(Buffer.from(ciphertext, "base64")).toString("utf8") + decipher.final("utf8");
+    return (
+      decipher.update(Buffer.from(ciphertext, "base64")).toString("utf8") +
+      decipher.final("utf8")
+    );
   }
 
   /**

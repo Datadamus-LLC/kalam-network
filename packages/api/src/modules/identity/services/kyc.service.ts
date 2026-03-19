@@ -1,4 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserEntity } from "../../../database/entities/user.entity";
@@ -65,6 +66,7 @@ export class KycService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly mirsadAiService: MirsadAiService,
     private readonly onboardingService: OnboardingService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -392,7 +394,7 @@ export class KycService {
     user: UserEntity,
     customerType: "INDIVIDUAL" | "CORPORATE",
   ): Promise<KycSubmissionResult> {
-    if (process.env.NODE_ENV === 'production') {
+    if (this.configService.get<string>('NODE_ENV') === "production") {
       throw new KycAutoApprovalDisabledException();
     }
 

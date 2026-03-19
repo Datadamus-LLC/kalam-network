@@ -124,17 +124,11 @@ export const envSchema = z.object({
   // JWT AUTHENTICATION
   // ============================
 
-  JWT_SECRET: z.preprocess(
-    (val) => (val === "" ? undefined : val),
-    z.string().min(32).optional(),
-  ),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
 
   JWT_EXPIRY: z.string().default("24h"),
 
-  JWT_REFRESH_SECRET: z.preprocess(
-    (val) => (val === "" ? undefined : val),
-    z.string().min(32).optional(),
-  ),
+  JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
 
   JWT_REFRESH_EXPIRY: z.string().default("30d"),
 
@@ -193,6 +187,14 @@ export const envSchema = z.object({
   // ============================
 
   ENCRYPTION_MASTER_KEY: optionalString,
+
+  ENCRYPTION_WRAP_KEY: z.string().min(32, 'ENCRYPTION_WRAP_KEY must be at least 32 characters'),
+
+  // ============================
+  // PAYMENTS
+  // ============================
+
+  TMUSD_TOKEN_ID: z.string().regex(/^\d+\.\d+\.\d+$/, 'Must be a valid Hedera token ID').optional(),
 
   // ============================
   // RESEND (Email delivery)
