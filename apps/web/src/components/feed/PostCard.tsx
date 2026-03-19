@@ -15,6 +15,7 @@ import {
   RiCloseLine,
 } from '@remixicon/react';
 import type { BadgeTier } from '@hedera-social/shared';
+import { OrgBadge } from '@/components/ui/OrgBadge';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,6 +29,8 @@ interface PostAuthor {
   badgeTier: BadgeTier | null;
   /** Username handle (e.g. "alice_42") — null if not yet set */
   username?: string | null;
+  /** Account type — 'business' shows OrgBadge */
+  accountType?: 'individual' | 'business';
 }
 
 interface CommentRecord {
@@ -252,9 +255,12 @@ export function PostCard({
           <Link
             href={`/profile/${author.accountId}`}
             onClick={(e) => e.stopPropagation()}
-            className="text-[14px] font-semibold text-foreground hover:underline truncate"
+            className="flex items-center gap-1 text-[14px] font-semibold text-foreground hover:underline truncate"
           >
             {authorName}
+            {author.accountType === 'business' && (
+              <OrgBadge size="sm" className="ml-1 flex-shrink-0 self-center" />
+            )}
           </Link>
 
           {author.badgeTier && (

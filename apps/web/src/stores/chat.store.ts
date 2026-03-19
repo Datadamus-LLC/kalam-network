@@ -4,7 +4,7 @@ export interface Conversation {
   id: string;
   hcsTopicId: string;
   type: 'direct' | 'group';
-  participants: Array<{ accountId: string; displayName?: string }>;
+  participants: Array<{ accountId: string; displayName?: string; accountType?: 'individual' | 'business' }>;
   lastMessage?: string;
   unreadCount: number;
   /** X25519-encrypted AES-256 symmetric key for each participant (accountId → base64) */

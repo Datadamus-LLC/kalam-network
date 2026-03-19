@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { RiSearchLine, RiCloseLine } from '@remixicon/react';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { OrgBadge } from '@/components/ui/OrgBadge';
 import { PostList } from '@/components/feed/PostList';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/auth.store';
@@ -127,7 +128,7 @@ export default function DiscoverPage() {
           ) : (
             <div className="space-y-1">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(results as any[]).map((user: { hederaAccountId: string; displayName?: string; username?: string | null }) => {
+              {(results as any[]).map((user: { hederaAccountId: string; displayName?: string; username?: string | null; accountType?: 'individual' | 'business' }) => {
                 const isOwnProfile = currentUser?.hederaAccountId === user.hederaAccountId;
                 const state = followState[user.hederaAccountId];
                 const isFollowing = state === 'following';
@@ -146,8 +147,11 @@ export default function DiscoverPage() {
                         {(user.displayName || user.hederaAccountId)[0]?.toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[14px] font-semibold text-foreground truncate">
+                        <p className="text-[14px] font-semibold text-foreground truncate flex items-center gap-1.5">
                           {user.displayName || 'Anonymous'}
+                          {user.accountType === 'business' && (
+                            <OrgBadge size="sm" className="flex-shrink-0" />
+                          )}
                         </p>
                         <p className="text-[12px] text-muted-foreground font-mono truncate">
                           {user.username ? `@${user.username}` : user.hederaAccountId}

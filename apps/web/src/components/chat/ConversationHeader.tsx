@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Conversation } from '@/stores/chat.store';
 import { api } from '@/lib/api';
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar';
+import { OrgBadge } from '@/components/ui/OrgBadge';
 
 interface ConversationHeaderProps {
   conversation: Conversation;
@@ -83,7 +84,15 @@ export function ConversationHeader({
 
       {/* Name + online status */}
       <div className="flex-1 min-w-0">
-        <h2 className="text-[15px] font-semibold text-foreground leading-tight break-words">{title}</h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-[15px] font-semibold text-foreground leading-tight break-words">{title}</h2>
+          {conversation.type !== 'group' && (() => {
+            const other = conversation.participants.find((p) => p.accountId !== currentAccountId);
+            return other?.accountType === 'business' ? (
+              <OrgBadge size="sm" className="mt-0.5 flex-shrink-0" />
+            ) : null;
+          })()}
+        </div>
         <p className="text-[12px] text-muted-foreground flex items-center gap-1.5">
           {conversation.type === 'group'
             ? `${participantCount} members`
