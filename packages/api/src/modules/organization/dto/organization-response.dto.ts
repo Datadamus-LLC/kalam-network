@@ -31,6 +31,7 @@ export interface OrganizationWithMembersResponse extends OrganizationResponse {
 export interface OrganizationMemberResponse {
   id: string;
   userId: string;
+  username: string | null;
   displayName: string | null;
   hederaAccountId: string | null;
   role: string;
