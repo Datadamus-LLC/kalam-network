@@ -702,6 +702,8 @@ export default function SettingsPage() {
                               if (pk) {
                                 setPendingPrivateKey(Buffer.from(pk).toString('base64'));
                                 setShowPinSetup(true);
+                              } else {
+                                void handleEnsureEncryptionKey();
                               }
                             }}
                           >
