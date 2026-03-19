@@ -1,6 +1,51 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 
 /**
+ * Thrown when a requested username is already taken by another user.
+ */
+export class UsernameUnavailableException extends HttpException {
+  readonly code = "USERNAME_UNAVAILABLE";
+
+  constructor(username: string) {
+    super(
+      {
+        success: false,
+        data: null,
+        error: {
+          code: "USERNAME_UNAVAILABLE",
+          message: `Username @${username} is already taken`,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      HttpStatus.CONFLICT,
+    );
+  }
+}
+
+/**
+ * Thrown when a provided username does not meet format requirements.
+ */
+export class InvalidUsernameException extends HttpException {
+  readonly code = "USERNAME_INVALID";
+
+  constructor() {
+    super(
+      {
+        success: false,
+        data: null,
+        error: {
+          code: "USERNAME_INVALID",
+          message:
+            "Username must be 3-30 characters: letters, numbers, underscores only",
+        },
+        timestamp: new Date().toISOString(),
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+}
+
+/**
  * Thrown when a profile is not found by Hedera account ID or user ID.
  */
 export class ProfileNotFoundException extends HttpException {

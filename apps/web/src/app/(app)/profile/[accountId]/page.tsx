@@ -21,6 +21,7 @@ interface ProfilePageProps {
 
 interface ProfileData {
   displayName: string | null;
+  username: string | null;
   bio: string | null;
   avatarUrl: string | null;
   hederaAccountId: string;
@@ -203,9 +204,15 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                       }} />
                     )}
                   </div>
-                  <p className="text-[13px] text-muted-foreground font-mono mt-0.5">
-                    {profile.hederaAccountId}
-                  </p>
+                  {profile.username ? (
+                    <p className="text-[13px] text-muted-foreground mt-0.5">
+                      @{profile.username}
+                    </p>
+                  ) : (
+                    <p className="text-[13px] text-muted-foreground font-mono mt-0.5">
+                      {profile.hederaAccountId}
+                    </p>
+                  )}
                   {profile.kycLevel && (
                     <span className="inline-block mt-1.5 px-[8px] py-[2px] text-[11px] rounded-full bg-[rgba(0,186,124,0.1)] text-[#00ba7c] font-semibold">
                       KYC: {profile.kycLevel}

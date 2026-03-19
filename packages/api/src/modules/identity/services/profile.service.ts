@@ -14,6 +14,7 @@ import {
   ProfileUpdateNotAllowedException,
   InvalidSearchQueryException,
   AvatarUploadException,
+  UsernameUnavailableException,
 } from "../exceptions/profile.exception";
 
 /** Strip all HTML tags from user-provided text to prevent stored XSS. */
@@ -26,6 +27,7 @@ const stripHtml = (text: string): string =>
  */
 export interface PublicProfileData {
   hederaAccountId: string;
+  username: string | null;
   displayName: string;
   bio: string;
   avatarIpfsCid: string | null;
@@ -64,6 +66,7 @@ export interface OwnProfileData extends PublicProfileData {
  */
 export interface SearchResultItem {
   hederaAccountId: string;
+  username: string | null;
   displayName: string;
   avatarIpfsCid: string | null;
   accountType: string;
@@ -169,6 +172,30 @@ export class ProfileService {
   }
 
   /**
+   * Check whether a username is syntactically valid and not yet taken.
+   *
+   * Returns `{ available: false }` for invalid format without throwing,
+   * so callers can use the result for UI feedback rather than error handling.
+   *
+   * @param username - Candidate username (raw, not yet lowercased)
+   * @returns `{ available: true }` if valid and unclaimed, `{ available: false }` otherwise
+   */
+  async checkUsernameAvailability(
+    username: string,
+  ): Promise<{ available: boolean }> {
+    const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+    if (!usernameRegex.test(username)) {
+      return { available: false };
+    }
+
+    const existing = await this.userRepository.findOne({
+      where: { username: username.toLowerCase() },
+    });
+
+    return { available: !existing };
+  }
+
+  /**
    * Update authenticated user's profile.
    *
    * When profile fields change and the user has an active DID NFT,
@@ -191,6 +218,7 @@ export class ProfileService {
       bio?: string;
       location?: string;
       encryptionPublicKey?: string;
+      username?: string;
       avatarFile?: { buffer: Buffer; mimetype: string; originalname: string };
     },
   ): Promise<PublicProfileData> {
@@ -226,6 +254,18 @@ export class ProfileService {
     // Handle encryption public key update (no DID NFT refresh needed)
     if (updateData.encryptionPublicKey !== undefined) {
       userUpdates.encryptionPublicKey = updateData.encryptionPublicKey;
+    }
+
+    // Handle username update — enforce uniqueness across users
+    if (updateData.username !== undefined) {
+      const normalized = updateData.username.toLowerCase();
+      const conflict = await this.userRepository.findOne({
+        where: { username: normalized },
+      });
+      if (conflict && conflict.id !== userId) {
+        throw new UsernameUnavailableException(normalized);
+      }
+      userUpdates.username = normalized;
     }
 
     // Handle avatar upload to IPFS via Pinata
@@ -333,9 +373,10 @@ export class ProfileService {
     // In hackathon mode, most users are pending_kyc since KYC isn't completed.
     const searchableStatuses = In(["active", "pending_kyc"]);
 
-    // Build search conditions: displayName + fallback to accountId or email
+    // Build search conditions: displayName, username, + fallback to accountId or email
     const whereConditions: Array<Record<string, unknown>> = [
       { displayName: ILike(`%${trimmedQuery}%`), status: searchableStatuses },
+      { username: ILike(`%${trimmedQuery}%`), status: searchableStatuses },
     ];
 
     // For multi-word queries, also match each word individually against displayName.
@@ -381,6 +422,7 @@ export class ProfileService {
       const stats = await this.getUserStats(user.hederaAccountId);
       results.push({
         hederaAccountId: user.hederaAccountId ?? "",
+        username: user.username ?? null,
         displayName: user.displayName ?? "Anonymous",
         avatarIpfsCid: user.avatarIpfsCid,
         accountType: user.accountType,
@@ -406,6 +448,7 @@ export class ProfileService {
 
     return {
       hederaAccountId: user.hederaAccountId ?? "",
+      username: user.username ?? null,
       displayName: user.displayName ?? "Anonymous",
       bio: user.bio ?? "",
       avatarIpfsCid: user.avatarIpfsCid ?? null,

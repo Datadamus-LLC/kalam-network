@@ -43,6 +43,15 @@ export class UserEntity {
   hederaAccountId!: string | null;
 
   /**
+   * Unique username / handle (e.g. "alice_42").
+   * 3–30 characters: letters, digits, underscores only. Stored lowercase.
+   * Null until the user explicitly sets one.
+   */
+  @Column({ type: "varchar", length: 30, nullable: true, unique: true })
+  @Index()
+  username!: string | null;
+
+  /**
    * Public key (hex format) for the user's ECDSA keypair
    * Used for Hedera transactions and message encryption
    */

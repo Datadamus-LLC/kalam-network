@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import {
@@ -17,7 +17,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PinModal } from "@/components/ui/PinModal";
-import { createTimeout } from "@/lib/timers";
+import { createTimeout, debounce } from "@/lib/timers";
 
 const HASHSCAN_BASE_URL = `${env.NEXT_PUBLIC_HASHSCAN_URL}/${env.NEXT_PUBLIC_HEDERA_NETWORK}`;
 
@@ -47,17 +47,22 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
+    null,
+  );
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Initialize form from user data — also fetch full profile to get bio/avatar
+  // Initialize form from user data — also fetch full profile to get bio/avatar/username
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || "");
     }
-    // Fetch full profile for fields not in auth store (bio, avatarUrl)
+    // Fetch full profile for fields not in auth store (bio, avatarUrl, username)
     api
       .getProfile("me")
       .then((profile) => {
@@ -66,6 +71,10 @@ export default function SettingsPage() {
         if (!user?.displayName && profile.displayName) {
           setDisplayName(profile.displayName);
         }
+        const profileWithUsername = profile as typeof profile & {
+          username?: string | null;
+        };
+        setUsername(profileWithUsername.username ?? "");
       })
       .catch(() => {
         /* non-critical */
@@ -79,6 +88,37 @@ export default function SettingsPage() {
       .then((s) => setWalletStatus({ hederaAccountId: s.hederaAccountId, status: s.status, hasEncryptionKey: (s as { hasEncryptionKey?: boolean }).hasEncryptionKey ?? false, hasBackup: (s as { hasBackup?: boolean }).hasBackup ?? false }))
       .catch(() => { /* non-critical */ });
   }, []);
+
+  // Debounced username availability check (300ms) using project debounce utility
+  const debouncedCheckUsername = useMemo(
+    () =>
+      debounce((trimmed: string) => {
+        api
+          .checkUsername(trimmed)
+          .then((res) => setUsernameAvailable(res.available))
+          .catch(() => setUsernameAvailable(null))
+          .finally(() => setIsCheckingUsername(false));
+      }, 300),
+    [],
+  );
+
+  const handleUsernameChange = useCallback(
+    (value: string) => {
+      setUsername(value);
+      setUsernameAvailable(null);
+
+      const trimmed = value.trim();
+      if (!trimmed || !/^[a-zA-Z0-9_]{3,30}$/.test(trimmed)) {
+        setIsCheckingUsername(false);
+        debouncedCheckUsername.cancel();
+        return;
+      }
+
+      setIsCheckingUsername(true);
+      debouncedCheckUsername.fn(trimmed);
+    },
+    [debouncedCheckUsername],
+  );
 
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [pendingPrivateKey, setPendingPrivateKey] = useState<string | null>(
@@ -158,6 +198,7 @@ export default function SettingsPage() {
       const updated = await api.updateProfile({
         displayName: displayName.trim(),
         bio: bio.trim() || undefined,
+        username: username.trim() || undefined,
       });
 
       // Update local auth state with the form values
@@ -176,7 +217,7 @@ export default function SettingsPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [displayName, bio, avatarUrl, user, setUser]);
+  }, [displayName, bio, avatarUrl, username, user, setUser]);
 
   const handleCopyAccountId = useCallback(async () => {
     if (!user?.hederaAccountId) return;
@@ -399,6 +440,59 @@ export default function SettingsPage() {
                     placeholder="Your display name"
                     className="rounded-full w-[220px] flex-shrink-0"
                   />
+                </div>
+
+                {/* Username row */}
+                <div className="px-[18px] py-[16px] flex items-center justify-between gap-4">
+                  <div>
+                    <label
+                      htmlFor="username"
+                      className="text-[14px] font-semibold text-foreground"
+                    >
+                      Username
+                    </label>
+                    <p className="text-[12px] text-muted-foreground mt-0.5">
+                      Your unique @handle (3–30 chars, letters/numbers/underscores)
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-muted-foreground select-none">
+                        @
+                      </span>
+                      <Input
+                        id="username"
+                        type="text"
+                        value={username}
+                        onChange={(e) => handleUsernameChange(e.target.value)}
+                        placeholder="yourhandle"
+                        className="rounded-full w-[200px] pl-7"
+                        maxLength={30}
+                      />
+                    </div>
+                    {username.trim() && (
+                      <p
+                        className={cn(
+                          "text-[11px] font-semibold",
+                          isCheckingUsername
+                            ? "text-muted-foreground"
+                            : usernameAvailable === true
+                              ? "text-[#00ba7c]"
+                              : usernameAvailable === false
+                                ? "text-[#e0245e]"
+                                : "text-muted-foreground",
+                        )}
+                      >
+                        {isCheckingUsername
+                          ? "Checking…"
+                          : usernameAvailable === true
+                            ? "Available"
+                            : usernameAvailable === false
+                              ? "Taken or invalid"
+                              : ""}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Bio row */}

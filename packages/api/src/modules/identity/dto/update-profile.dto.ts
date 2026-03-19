@@ -5,6 +5,7 @@ import {
   MinLength,
   Matches,
 } from "class-validator";
+import { Transform } from "class-transformer";
 
 /**
  * DTO for profile update requests (PUT /api/v1/profile/me).
@@ -41,4 +42,18 @@ export class UpdateProfileDto {
       "encryptionPublicKey must be a base64-encoded 32-byte X25519 public key (44 characters)",
   })
   encryptionPublicKey?: string;
+
+  /**
+   * Unique handle for this user (e.g. "alice_42").
+   * 3–30 characters: letters, digits, underscores only.
+   * Automatically lowercased before storage.
+   */
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-zA-Z0-9_]{3,30}$/, {
+    message:
+      "Username must be 3-30 chars: letters, numbers, underscores only",
+  })
+  @Transform(({ value }: { value: string }) => value?.toLowerCase())
+  username?: string;
 }
