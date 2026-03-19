@@ -1,42 +1,67 @@
-import React from 'react';
-import Image from 'next/image';
-import clsx from 'clsx';
+'use client';
 
-interface AvatarProps {
-  src?: string;
-  alt: string;
-  size?: 'sm' | 'md' | 'lg';
+import React, { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface AvatarProps {
+  className?: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  children?: ReactNode;
 }
 
-const sizeMap = {
-  sm: { className: 'w-8 h-8', pixels: 32 },
-  md: { className: 'w-12 h-12', pixels: 48 },
-  lg: { className: 'w-16 h-16', pixels: 64 },
+const sizeClasses = {
+  xs: 'w-6 h-6 text-[10px]',
+  sm: 'w-8 h-8 text-[13px]',
+  md: 'w-10 h-10 text-[15px]',
+  lg: 'w-14 h-14 text-[20px]',
 } as const;
 
-export function Avatar({ src, alt, size = 'md' }: AvatarProps) {
-  const sizeConfig = sizeMap[size];
-
+export function Avatar({ className, size = 'md', children }: AvatarProps) {
   return (
     <div
-      className={clsx(
-        sizeConfig.className,
-        'rounded-full bg-gray-200 overflow-hidden flex-shrink-0',
+      className={cn(
+        'relative flex-shrink-0 rounded-full overflow-hidden bg-white/[0.08] flex items-center justify-center',
+        sizeClasses[size],
+        className,
       )}
     >
-      {src ? (
-        <Image
-          src={src}
-          alt={alt}
-          width={sizeConfig.pixels}
-          height={sizeConfig.pixels}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full bg-blue-500 flex items-center justify-center text-white font-bold">
-          {alt[0]?.toUpperCase() ?? '?'}
-        </div>
-      )}
+      {children}
     </div>
+  );
+}
+
+export interface AvatarImageProps {
+  src?: string | null;
+  alt?: string;
+  className?: string;
+}
+
+export function AvatarImage({ src, alt = '', className }: AvatarImageProps) {
+  if (!src) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      className={cn('absolute inset-0 w-full h-full object-cover', className)}
+    />
+  );
+}
+
+export interface AvatarFallbackProps {
+  children?: ReactNode;
+  className?: string;
+}
+
+export function AvatarFallback({ children, className }: AvatarFallbackProps) {
+  return (
+    <span
+      className={cn(
+        'font-semibold text-foreground select-none',
+        className,
+      )}
+    >
+      {children}
+    </span>
   );
 }

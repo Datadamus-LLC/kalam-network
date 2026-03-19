@@ -12,13 +12,6 @@ export function useAuth() {
     router.push('/');
   };
 
-  const setAuthToken = (token: string) => {
-    store.setToken(token);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
-    }
-  };
-
   return {
     user: store.user,
     token: store.token,
@@ -26,7 +19,7 @@ export function useAuth() {
     isLoading: store.isLoading,
     error: store.error,
     setUser: store.setUser,
-    setToken: setAuthToken,
+    setTokens: store.setTokens,
     setError: store.setError,
     setIsLoading: store.setIsLoading,
     logout,
