@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import { PaymentsService } from "./payments.service";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import type { JwtPayload } from "../../common/guards/jwt-auth.guard";
@@ -58,6 +59,7 @@ export class PaymentsController {
    * POST /api/v1/payments/send — Send a payment to another user
    */
   @Post("send")
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   async sendPayment(
     @CurrentUser() user: JwtPayload,
     @Body() dto: SendPaymentDto,
@@ -77,6 +79,7 @@ export class PaymentsController {
    * POST /api/v1/payments/split — Create a split payment across participants
    */
   @Post("split")
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   async createSplitPayment(
     @CurrentUser() user: JwtPayload,
     @Body() dto: CreateSplitPaymentDto,
@@ -97,6 +100,7 @@ export class PaymentsController {
    * POST /api/v1/payments/request — Create a payment request
    */
   @Post("request")
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   async createPaymentRequest(
     @CurrentUser() user: JwtPayload,
     @Body() dto: RequestPaymentDto,
@@ -116,6 +120,7 @@ export class PaymentsController {
    * POST /api/v1/payments/request/:requestId/pay — Fulfill a payment request
    */
   @Post("request/:requestId/pay")
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   async fulfillPaymentRequest(
     @CurrentUser() user: JwtPayload,
     @Param("requestId") requestId: string,
