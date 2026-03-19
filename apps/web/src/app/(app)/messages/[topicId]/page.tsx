@@ -137,26 +137,20 @@ export default function ChatPage() {
     const found = conversationsData.find((c) => c.hcsTopicId === topicId);
     const encryptedKeys = found?.encryptedKeys;
     if (!encryptedKeys) {
-      console.warn('[E2E] No encryptedKeys found for conversation', topicId, 'found:', !!found, 'keys in found:', found ? Object.keys(found) : []);
       return;
     }
     const privateKey = getStoredPrivateKey();
     if (!privateKey) {
-      console.warn('[E2E] No private key in localStorage');
       return;
     }
-    console.log('[E2E] Attempting key derivation for', currentAccountId, 'encryptedKeys accounts:', Object.keys(encryptedKeys));
     decryptConversationKey(encryptedKeys, currentAccountId, privateKey)
       .then((key) => {
         if (key) {
-          console.log('[E2E] ✅ Symmetric key derived successfully, length:', key.length);
           setSymmetricKey(key);
-        } else {
-          console.error('[E2E] ❌ decryptConversationKey returned null — nacl.box.open failed (wrong key?)');
         }
       })
-      .catch((err) => {
-        console.error('[E2E] ❌ decryptConversationKey threw:', err);
+      .catch(() => {
+        // Key derivation failed — messages will display without client-side decryption
       });
   }, [conversationsData, topicId, currentAccountId]);
 

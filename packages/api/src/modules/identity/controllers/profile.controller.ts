@@ -111,6 +111,7 @@ export class ProfileController {
       bio: dto.bio,
       location: dto.location,
       encryptionPublicKey: dto.encryptionPublicKey,
+      username: dto.username,
       avatarFile: avatarFile
         ? {
             buffer: avatarFile.buffer,
@@ -123,6 +124,32 @@ export class ProfileController {
     return {
       success: true,
       data: profile,
+      error: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * GET /api/v1/profile/check-username/:username
+   *
+   * Public availability check for a username.
+   * Returns { available: true } if the handle is valid and unclaimed.
+   * No authentication required.
+   *
+   * Note: This route MUST be registered before /:accountId so that
+   * the literal segment "check-username" is not parsed as an accountId.
+   */
+  @Get("check-username/:username")
+  @HttpCode(HttpStatus.OK)
+  async checkUsername(
+    @Param("username") username: string,
+  ): Promise<ApiResponse<{ available: boolean }>> {
+    const result =
+      await this.profileService.checkUsernameAvailability(username);
+
+    return {
+      success: true,
+      data: result,
       error: null,
       timestamp: new Date().toISOString(),
     };

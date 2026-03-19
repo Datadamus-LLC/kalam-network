@@ -106,7 +106,7 @@ export default function DiscoverPage() {
           ) : (
             <div className="space-y-1">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(results as any[]).map((user: { hederaAccountId: string; displayName?: string }) => {
+              {(results as any[]).map((user: { hederaAccountId: string; displayName?: string; username?: string | null }) => {
                 const isOwnProfile = currentUser?.hederaAccountId === user.hederaAccountId;
                 const state = followState[user.hederaAccountId];
                 const isFollowing = state === 'following';
@@ -128,7 +128,9 @@ export default function DiscoverPage() {
                         <p className="text-[14px] font-semibold text-foreground truncate">
                           {user.displayName || 'Anonymous'}
                         </p>
-                        <p className="text-[12px] text-muted-foreground font-mono truncate">{user.hederaAccountId}</p>
+                        <p className="text-[12px] text-muted-foreground font-mono truncate">
+                          {user.username ? `@${user.username}` : user.hederaAccountId}
+                        </p>
                       </div>
                     </button>
                     {!isOwnProfile && (

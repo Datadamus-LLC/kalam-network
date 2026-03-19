@@ -22,6 +22,7 @@ interface OrgData {
   members: Array<{
     userId: string;
     role: string;
+    username: string | null;
     displayName: string | null;
     hederaAccountId: string | null;
     joinedAt: string;
@@ -50,13 +51,15 @@ function kybBadgeCls(status: string): string {
   }
 }
 
-// Tab links — lemon underline on active (current path)
-const ORG_TABS = [
-  { label: 'Overview', href: '/organization' },
-  { label: 'Members', href: '/organization/members' },
-  { label: 'Broadcasts', href: '/broadcasts' },
-  { label: 'Settings', href: '/organization/settings' },
-];
+/** Build tab links with the org ID for broadcasts deep-link */
+function buildOrgTabs(orgId: string) {
+  return [
+    { label: 'Overview', href: '/organization' },
+    { label: 'Members', href: '/organization/members' },
+    { label: 'Broadcasts', href: `/broadcasts?orgId=${encodeURIComponent(orgId)}` },
+    { label: 'Settings', href: '/organization/settings' },
+  ];
+}
 
 /**
  * Organization dashboard — /organization
@@ -179,12 +182,24 @@ export default function OrganizationPage() {
     );
   }
 
+  const orgTabs = buildOrgTabs(org.id);
+
   return (
     <div className="flex min-h-full">
       {/* ── Main column ── */}
       <div className="flex-1 min-w-0 border-r border-border">
+        {/* Back to Feed */}
+        <div className="px-[18px] pt-[14px] pb-0">
+          <Link
+            href="/feed"
+            className="inline-flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Back to Feed
+          </Link>
+        </div>
+
         {/* Org header */}
-        <div className="px-[18px] pt-[20px] pb-4 border-b border-border">
+        <div className="px-[18px] pt-[12px] pb-4 border-b border-border">
           <div className="flex items-start gap-4">
             {/* Square-rounded org avatar per spec */}
             <Avatar className="w-14 h-14 rounded-[10px] flex-shrink-0">
@@ -236,7 +251,7 @@ export default function OrganizationPage() {
 
         {/* Tabs — lemon underline per spec */}
         <div className="flex border-b border-border">
-          {ORG_TABS.map((tab) => {
+          {orgTabs.map((tab) => {
             const isActive = tab.href === '/organization';
             return (
               <Link
@@ -273,21 +288,31 @@ export default function OrganizationPage() {
             <p className="text-[14px] text-muted-foreground text-center py-8">No members yet.</p>
           ) : (
             <div className="divide-y divide-border border border-border rounded-[14px] overflow-hidden">
-              {org.members.map((member) => (
-                <div key={member.userId} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.018] transition-colors">
-                  <div>
-                    <p className="text-[14px] font-semibold text-foreground">
-                      {member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`}
-                    </p>
-                    {member.hederaAccountId && member.displayName && (
-                      <p className="text-[12px] text-muted-foreground font-mono">{member.hederaAccountId}</p>
-                    )}
+              {org.members.map((member) => {
+                const primaryName = member.username
+                  ? `@${member.username}`
+                  : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
+                const secondaryName = member.username && (member.displayName ?? member.hederaAccountId)
+                  ? (member.displayName ?? member.hederaAccountId)
+                  : member.username && !member.displayName && member.hederaAccountId
+                    ? member.hederaAccountId
+                    : null;
+                return (
+                  <div key={member.userId} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.018] transition-colors">
+                    <div>
+                      <p className="text-[14px] font-semibold text-foreground">
+                        {primaryName}
+                      </p>
+                      {secondaryName && (
+                        <p className="text-[12px] text-muted-foreground font-mono">{secondaryName}</p>
+                      )}
+                    </div>
+                    <span className={cn('px-[8px] py-[2px] rounded-full text-[11px] font-semibold capitalize', roleBadgeCls(member.role))}>
+                      {member.role}
+                    </span>
                   </div>
-                  <span className={cn('px-[8px] py-[2px] rounded-full text-[11px] font-semibold capitalize', roleBadgeCls(member.role))}>
-                    {member.role}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

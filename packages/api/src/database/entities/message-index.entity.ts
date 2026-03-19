@@ -33,7 +33,7 @@ export class MessageIndexEntity {
   encryptedPreview!: Buffer | null; // Client-encrypted preview (optional, set by sender for push notifications)
 
   @Column({ type: "text", nullable: true })
-  plaintextContent!: string | null; // Stored for hackathon demo — plaintext message text
+  plaintextContent!: string | null; // Stored plaintext for search indexing and conversation sync
 
   @Column({ type: "boolean", default: false })
   hasMedia!: boolean;

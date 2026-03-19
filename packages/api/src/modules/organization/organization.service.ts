@@ -145,9 +145,25 @@ export class OrganizationService {
       order: { joinedAt: "ASC" },
     });
 
+    // Batch-fetch user details so overview page shows real names, not nulls
+    const userIds = members.map((m) => m.userId);
+    const users =
+      userIds.length > 0
+        ? await this.userRepository.find({ where: { id: In(userIds) } })
+        : [];
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
     return {
       ...this.mapOrgToResponse(org),
-      members: members.map((m) => this.mapMemberToResponse(m)),
+      members: members.map((m) => {
+        const user = userMap.get(m.userId);
+        return {
+          ...this.mapMemberToResponse(m),
+          username: user?.username ?? null,
+          displayName: user?.displayName ?? null,
+          hederaAccountId: user?.hederaAccountId ?? null,
+        };
+      }),
     };
   }
 
@@ -206,6 +222,7 @@ export class OrganizationService {
       const user = userMap.get(m.userId);
       return {
         ...this.mapMemberToResponse(m),
+        username: user?.username ?? null,
         displayName: user?.displayName ?? null,
         hederaAccountId: user?.hederaAccountId ?? null,
       };
@@ -651,6 +668,7 @@ export class OrganizationService {
     return {
       id: member.id,
       userId: member.userId,
+      username: null,
       displayName: null,
       hederaAccountId: null,
       role: member.role,

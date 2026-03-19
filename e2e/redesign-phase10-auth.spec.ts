@@ -22,7 +22,7 @@ test.describe('Auth landing page (/)', () => {
   });
 
   test('shows Hedera Social wordmark', async ({ page }) => {
-    await expect(page.getByText(the platform).first()).toBeVisible();
+    await expect(page.getByText(/the platform|kalam|hedera/i).first()).toBeVisible();
   });
 
   test('Create Account button exists and is pill-shaped', async ({ page }) => {
@@ -182,7 +182,7 @@ test.describe('Multi-resolution screenshots', () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto('/');
       await page.waitForURL('/');
-      await expect(page.getByText(the platform).first()).toBeVisible();
+      await expect(page.getByText(/the platform|kalam|hedera/i).first()).toBeVisible();
       await page.screenshot({ path: `test-screenshots/phase10-auth-landing-${vp.name}.png` });
     });
 

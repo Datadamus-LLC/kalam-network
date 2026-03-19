@@ -545,7 +545,9 @@ export class NotificationsService {
       );
 
       if (!notificationTopicId) {
-        // HCS audit trail is optional — skip silently
+        this.logger.warn(
+          'HCS audit trail skipped — configure NOTIFICATION_AUDIT_TOPIC_ID (hedera.notificationTopic)',
+        );
         return;
       }
 

@@ -346,8 +346,18 @@ class ApiClient {
     displayName?: string;
     bio?: string;
     avatarUrl?: string;
+    username?: string;
   }): Promise<unknown> {
     return this.request('PUT', '/profile/me', { body: data });
+  }
+
+  /**
+   * Check whether a username is available.
+   * Public endpoint — no auth token required.
+   * Returns { available: true } if the handle is valid and unclaimed.
+   */
+  checkUsername(username: string): Promise<{ available: boolean }> {
+    return this.request('GET', `/profile/check-username/${encodeURIComponent(username)}`);
   }
 
   /** Get wallet and encryption key status for the authenticated user. */

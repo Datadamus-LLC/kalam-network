@@ -10,8 +10,8 @@
  * (one per participant) are stored in the database and submitted to HCS.
  *
  * Architecture note: In a production system, this would be done client-side.
- * For the hackathon prototype, the platform acts as a trusted key
- * distribution facilitator during conversation creation.
+ * The platform acts as a trusted key distribution facilitator during
+ * conversation creation; in a future version this would be done client-side.
  */
 
 import nacl from "tweetnacl";

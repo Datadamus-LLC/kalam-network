@@ -43,6 +43,15 @@ export class UserEntity {
   hederaAccountId!: string | null;
 
   /**
+   * Unique username / handle (e.g. "alice_42").
+   * 3–30 characters: letters, digits, underscores only. Stored lowercase.
+   * Null until the user explicitly sets one.
+   */
+  @Column({ type: "varchar", length: 30, nullable: true, unique: true })
+  @Index()
+  username!: string | null;
+
+  /**
    * Public key (hex format) for the user's ECDSA keypair
    * Used for Hedera transactions and message encryption
    */
@@ -50,9 +59,9 @@ export class UserEntity {
   publicKey!: string | null;
 
   /**
-   * Encrypted private key (HACKATHON MODE ONLY)
-   * In production, private keys are stored in Tamam Custody MPC.
-   * For hackathon, we encrypt locally using AES-256-GCM (NOT SECURE FOR PRODUCTION).
+   * Encrypted private key (local fallback when MPC custody is unavailable)
+   * In production with Tamam MPC Custody configured, private keys are stored in MPC.
+   * This field provides local AES-256-GCM encrypted fallback — requires PIN-based decryption.
    * This field is never returned in API responses (select: false).
    */
   @Column({ type: "text", nullable: true, select: false })

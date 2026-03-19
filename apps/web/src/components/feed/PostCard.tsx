@@ -26,6 +26,8 @@ interface PostAuthor {
   avatarUrl: string | null;
   /** Badge tier from server — null for individual accounts */
   badgeTier: BadgeTier | null;
+  /** Username handle (e.g. "alice_42") — null if not yet set */
+  username?: string | null;
 }
 
 interface CommentRecord {
@@ -259,12 +261,16 @@ export function PostCard({
             <VerifiedBadge tier={author.badgeTier} size="sm" />
           )}
 
-          {/* Show account ID as secondary if no display name */}
-          {!author.displayName && (
+          {/* Show @username or short account ID as secondary identifier */}
+          {author.username ? (
+            <span className="text-[12px] text-muted-foreground truncate">
+              @{author.username}
+            </span>
+          ) : !author.displayName ? (
             <span className="text-[12px] text-muted-foreground font-mono truncate">
               {authorIdShort}
             </span>
-          )}
+          ) : null}
 
           <span className="text-[13px] text-muted-foreground truncate">
             · {formatRelativeTime(createdAt)}

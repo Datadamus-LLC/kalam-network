@@ -10,6 +10,7 @@ import { api, ApiError } from '@/lib/api';
 interface OrgMember {
   userId: string;
   role: string;
+  username: string | null;
   displayName: string | null;
   hederaAccountId: string | null;
   joinedAt: string;
@@ -126,10 +127,10 @@ export default function OrganizationMembersPage() {
     (userId: string) => {
       const member = members.find((m) => m.userId === userId);
       if (!member) return;
-      setPendingRemoval({
-        userId,
-        memberName: member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`,
-      });
+      const memberName = member.username
+        ? `@${member.username}`
+        : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
+      setPendingRemoval({ userId, memberName });
     },
     [members],
   );
@@ -163,9 +164,12 @@ export default function OrganizationMembersPage() {
     (userId: string, newRole: string) => {
       const member = members.find((m) => m.userId === userId);
       if (!member || member.role === newRole) return;
+      const memberName = member.username
+        ? `@${member.username}`
+        : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
       setPendingRoleChange({
         userId,
-        memberName: member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`,
+        memberName,
         fromRole: member.role,
         toRole: newRole,
       });
@@ -271,14 +275,23 @@ export default function OrganizationMembersPage() {
             <p className="text-[14px] text-muted-foreground text-center py-8">No members yet.</p>
           ) : (
             <div className="divide-y divide-border border border-border rounded-[14px] overflow-hidden">
-              {members.map((member) => (
+              {members.map((member) => {
+                const primaryName = member.username
+                  ? `@${member.username}`
+                  : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
+                const subLine = member.username
+                  ? (member.displayName ?? member.hederaAccountId)
+                  : member.hederaAccountId && !member.displayName
+                    ? null
+                    : member.hederaAccountId ?? null;
+                return (
                 <div key={member.userId} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.018] transition-colors">
                   <div className="min-w-0">
                     <p className="text-[14px] font-semibold text-foreground truncate">
-                      {member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`}
+                      {primaryName}
                     </p>
-                    {member.hederaAccountId && member.displayName && (
-                      <p className="text-[12px] text-muted-foreground font-mono truncate">{member.hederaAccountId}</p>
+                    {subLine && (
+                      <p className="text-[12px] text-muted-foreground font-mono truncate">{subLine}</p>
                     )}
                     <p className="text-[11px] text-muted-foreground">
                       Joined {new Date(member.joinedAt).toLocaleDateString()}
@@ -313,7 +326,8 @@ export default function OrganizationMembersPage() {
                     )}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           )}
 

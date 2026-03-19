@@ -256,7 +256,7 @@ export class DidNftService {
           `DID NFT frozen (soulbound) on account ${hederaAccountId}`,
         );
       } catch (freezeError: unknown) {
-        // Freezing failure is non-fatal for the hackathon:
+        // Freezing failure is non-fatal — NFT was minted successfully:
         // The NFT is still minted, just not soulbound yet.
         // In production, this MUST succeed.
         const freezeMessage =

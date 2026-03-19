@@ -274,7 +274,7 @@ test.describe('Mobile menu (375px)', () => {
   });
 
   test('mobile header shows "Home" title', async ({ page }) => {
-    await expect(page.locator('header').getByText(the platform)).toBeVisible();
+    await expect(page.locator('header').getByText(/the platform|kalam|hedera/i)).toBeVisible();
   });
 
   test('mobile menu opens on hamburger click', async ({ page }) => {

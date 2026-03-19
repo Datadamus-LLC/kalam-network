@@ -36,6 +36,7 @@ import {
   ProfileNotFoundException,
   InvalidSearchQueryException,
   ProfileUpdateNotAllowedException,
+  UsernameUnavailableException,
 } from "../exceptions/profile.exception";
 
 const logger = new Logger("ProfileServiceIntegrationTest");
@@ -623,5 +624,162 @@ describe("ProfileService Integration", () => {
     await expect(profileService.searchUsers("")).rejects.toThrow(
       InvalidSearchQueryException,
     );
+  });
+
+  // ---------------------------------------------------------------------------
+  // username handle system
+  // ---------------------------------------------------------------------------
+
+  describe("username handle system", () => {
+    it("checkUsernameAvailability — valid, unclaimed username returns available: true", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      // Insert a user WITHOUT a username so the target name is not claimed
+      await insertTestUser({ username: null });
+
+      const suffix = `${Date.now()}`;
+      const result = await profileService.checkUsernameAvailability(
+        `validuser${suffix}`.slice(0, 30),
+      );
+
+      expect(result).toEqual({ available: true });
+    });
+
+    it("checkUsernameAvailability — already claimed username returns available: false", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      const takenName = `taken${Date.now()}`.slice(0, 30);
+      await insertTestUser({ username: takenName });
+
+      const result = await profileService.checkUsernameAvailability(takenName);
+
+      expect(result).toEqual({ available: false });
+    });
+
+    it("checkUsernameAvailability — case insensitive: 'MyHandle' unavailable when 'myhandle' is taken", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      const base = `myhandle${Date.now()}`.slice(0, 30);
+      // Store lowercase in DB (as the service normalises to lowercase)
+      await insertTestUser({ username: base.toLowerCase() });
+
+      // Query with mixed-case version of the same handle
+      const mixedCase =
+        base.charAt(0).toUpperCase() + base.slice(1).toLowerCase();
+      const result =
+        await profileService.checkUsernameAvailability(mixedCase);
+
+      expect(result).toEqual({ available: false });
+    });
+
+    it("checkUsernameAvailability — invalid format (too short, 2 chars) returns available: false", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      // 'ab' is only 2 characters — regex requires 3–30
+      const result = await profileService.checkUsernameAvailability("ab");
+
+      expect(result).toEqual({ available: false });
+    });
+
+    it("checkUsernameAvailability — invalid format (special chars) returns available: false", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      // Space and exclamation mark are not in [a-zA-Z0-9_]
+      const result =
+        await profileService.checkUsernameAvailability("user name!");
+
+      expect(result).toEqual({ available: false });
+    });
+
+    it("updateProfile — sets username and normalizes to lowercase", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      const user = await insertTestUser({
+        displayName: "Username Normalise Test",
+        status: "active",
+        didNftSerial: null,
+      });
+
+      const rawHandle = `MyHandle${Date.now()}`.slice(0, 30);
+      await profileService.updateProfile(user.id, { username: rawHandle });
+
+      const updated = await userRepository.findOne({ where: { id: user.id } });
+      expect(updated).not.toBeNull();
+      expect(updated!.username).toBe(rawHandle.toLowerCase());
+    });
+
+    it("updateProfile — throws UsernameUnavailableException when username is already taken", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      const takenHandle = `taken_handle${Date.now()}`.slice(0, 30);
+
+      // User A already owns the handle
+      await insertTestUser({
+        username: takenHandle,
+        status: "active",
+        didNftSerial: null,
+      });
+
+      // User B tries to claim the same handle
+      const userB = await insertTestUser({
+        username: null,
+        status: "active",
+        didNftSerial: null,
+      });
+
+      await expect(
+        profileService.updateProfile(userB.id, { username: takenHandle }),
+      ).rejects.toThrow(UsernameUnavailableException);
+    });
+
+    it("searchUsers — finds user by username", async () => {
+      if (!postgresAvailable) {
+        logger.warn("SKIPPED: PostgreSQL not available");
+        pending();
+        return;
+      }
+
+      const uniqueHandle = `searchable${Date.now()}`.slice(0, 30);
+      await insertTestUser({
+        username: uniqueHandle,
+        status: "active",
+        hederaAccountId: `0.0.${Date.now() % 999999}`,
+      });
+
+      const results = await profileService.searchUsers(uniqueHandle);
+
+      expect(results.length).toBeGreaterThanOrEqual(1);
+      const match = results.find((r) => r.username === uniqueHandle);
+      expect(match).toBeDefined();
+      expect(match!.username).toBe(uniqueHandle);
+    });
   });
 });
