@@ -10,6 +10,7 @@ import {
   TamamCustodyKeypairException,
   TamamCustodySigningException,
   TamamCustodyTransactionCreationException,
+  TamamCustodyUnsupportedTokenException,
 } from "./tamam-custody.exceptions";
 
 // ---------------------------------------------------------------------------
@@ -668,9 +669,7 @@ export class TamamCustodyService implements OnModuleInit {
     >;
     const assetId = tokenAddresses[currency];
     if (!assetId) {
-      throw new Error(
-        `Unknown HTS token: ${currency}. Add it to PAYMENT_CONSTANTS.TOKEN_ADDRESSES.`,
-      );
+      throw new TamamCustodyUnsupportedTokenException(currency);
     }
     return {
       assetType: "HTS",

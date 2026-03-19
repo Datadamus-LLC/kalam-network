@@ -45,14 +45,15 @@ export interface NotificationCreatedPayload {
  * HCS notification audit payload submitted to the user's notification topic.
  */
 interface HcsNotificationPayload {
-  v: "1.0";
+  version: 1;
   type: "notification";
+  timestamp: string;
   category: string;
   event: string;
   recipientAccountId: string;
   fromAccountId: string | null;
   preview: string | null;
-  timestamp: number;
+  ts: number;
 }
 
 /**
@@ -546,20 +547,21 @@ export class NotificationsService {
 
       if (!notificationTopicId) {
         this.logger.warn(
-          'HCS audit trail skipped — configure NOTIFICATION_AUDIT_TOPIC_ID (hedera.notificationTopic)',
+          "HCS audit trail skipped — configure NOTIFICATION_AUDIT_TOPIC_ID (hedera.notificationTopic)",
         );
         return;
       }
 
       const hcsPayload: HcsNotificationPayload = {
-        v: "1.0",
+        version: 1,
         type: "notification",
+        timestamp: new Date().toISOString(),
         category: notification.category,
         event: notification.event,
         recipientAccountId: notification.recipientAccountId,
         fromAccountId: notification.fromAccountId,
         preview: notification.preview,
-        timestamp: notification.createdAt.getTime(),
+        ts: notification.createdAt.getTime(),
       };
 
       const messageBuffer = Buffer.from(JSON.stringify(hcsPayload));

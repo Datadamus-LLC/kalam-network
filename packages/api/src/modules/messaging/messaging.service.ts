@@ -31,8 +31,9 @@ import { NotificationsService } from "../notifications/notifications.service";
  * happens client-side (E2E encryption).
  */
 interface MessagePayload {
-  v: string;
+  version: 1;
   type: "message" | "system" | "key_exchange" | "group_meta";
+  timestamp: string;
   sender: string;
   ts: number;
   content: {
@@ -132,8 +133,9 @@ export class MessagingService {
       .toString("base64");
 
     const messagePayload: MessagePayload = {
-      v: "1.0",
+      version: 1,
       type: "message",
+      timestamp: new Date().toISOString(),
       sender: senderAccountId,
       ts: Date.now(),
       content: {
@@ -172,7 +174,9 @@ export class MessagingService {
       senderAccountId,
       messageType: "message",
       // Store client-side encrypted content — server NEVER stores plaintext
-      encryptedPreview: encryptedContent ? Buffer.from(encryptedContent, "utf8") : null,
+      encryptedPreview: encryptedContent
+        ? Buffer.from(encryptedContent, "utf8")
+        : null,
       plaintextContent: null,
       hasMedia: false,
     });
@@ -208,22 +212,33 @@ export class MessagingService {
     );
 
     // Notify all other participants of the new message (non-blocking)
-    const senderUser = await this.userRepository.findOne({
-      where: { hederaAccountId: senderAccountId },
-    }).catch(() => null);
+    const senderUser = await this.userRepository
+      .findOne({
+        where: { hederaAccountId: senderAccountId },
+      })
+      .catch(() => null);
     const senderName = senderUser?.displayName ?? senderAccountId;
-    const allMembers = await this.memberRepository.find({
-      where: { conversationId: conversation.id },
-    }).catch(() => []);
+    const allMembers = await this.memberRepository
+      .find({
+        where: { conversationId: conversation.id },
+      })
+      .catch(() => []);
     for (const member of allMembers) {
-      if (member.hederaAccountId !== senderAccountId && member.leftAt === null) {
-        this.notificationsService.notifyNewMessage(
-          member.hederaAccountId,
-          senderAccountId,
-          topicId,
-          null, // Never expose plaintext in notifications — E2E encrypted
-          senderName,
-        ).catch(() => { /* non-critical */ });
+      if (
+        member.hederaAccountId !== senderAccountId &&
+        member.leftAt === null
+      ) {
+        this.notificationsService
+          .notifyNewMessage(
+            member.hederaAccountId,
+            senderAccountId,
+            topicId,
+            null, // Never expose plaintext in notifications — E2E encrypted
+            senderName,
+          )
+          .catch(() => {
+            /* non-critical */
+          });
       }
     }
 
@@ -363,12 +378,19 @@ export class MessagingService {
           let actualSenderAccountId = hcsMsg.payer_account_id;
           if (hcsMsg.message) {
             try {
-              const rawBytes = Buffer.from(hcsMsg.message, "base64").toString("utf8");
-              const parsedPayload = JSON.parse(rawBytes) as Record<string, unknown>;
+              const rawBytes = Buffer.from(hcsMsg.message, "base64").toString(
+                "utf8",
+              );
+              const parsedPayload = JSON.parse(rawBytes) as Record<
+                string,
+                unknown
+              >;
               if (typeof parsedPayload.sender === "string") {
                 actualSenderAccountId = parsedPayload.sender;
               }
-            } catch { /* not decodable — use payer */ }
+            } catch {
+              /* not decodable — use payer */
+            }
           }
 
           // Check if there's a pending record with sequenceNumber=0 from the actual sender
@@ -390,11 +412,24 @@ export class MessagingService {
             });
           } else {
             // Try to detect the message type by decoding the HCS message bytes
-            const KNOWN_TYPES = new Set(["message", "payment", "payment_request", "payment_split", "system"]);
-            let detectedType: "message" | "payment" | "payment_request" | "payment_split" | "system" = "message";
+            const KNOWN_TYPES = new Set([
+              "message",
+              "payment",
+              "payment_request",
+              "payment_split",
+              "system",
+            ]);
+            let detectedType:
+              | "message"
+              | "payment"
+              | "payment_request"
+              | "payment_split"
+              | "system" = "message";
             if (hcsMsg.message) {
               try {
-                const raw = Buffer.from(hcsMsg.message, "base64").toString("utf8");
+                const raw = Buffer.from(hcsMsg.message, "base64").toString(
+                  "utf8",
+                );
                 const parsed: unknown = JSON.parse(raw);
                 if (
                   parsed &&

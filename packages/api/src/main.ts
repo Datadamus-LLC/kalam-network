@@ -8,6 +8,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = new Logger("Bootstrap");
 
+  // TODO: Register GlobalExceptionFilter when implemented
+  // app.useGlobalFilters(new GlobalExceptionFilter());
+
   // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({

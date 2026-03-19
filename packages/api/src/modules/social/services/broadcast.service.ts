@@ -27,8 +27,9 @@ import {
  * HCS Broadcast payload structure submitted to an org's broadcast topic.
  */
 interface HcsBroadcastPayload {
-  v: "1.0";
+  version: 1;
   type: "broadcast";
+  timestamp: string;
   sender: string;
   organizationId: string;
   content: {
@@ -105,8 +106,9 @@ export class BroadcastService {
 
     // Build HCS payload
     const hcsPayload: HcsBroadcastPayload = {
-      v: "1.0",
+      version: 1,
       type: "broadcast",
+      timestamp: new Date().toISOString(),
       sender: authorAccountId,
       organizationId: orgId,
       content: {
@@ -297,7 +299,8 @@ export class BroadcastService {
     orgId: string,
   ): Promise<BroadcastSubscriptionResponse> {
     // Accept: UUID, Hedera account ID (0.0.XXXXX), or org name (partial match)
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidPattern =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const hederaPattern = /^\d+\.\d+\.\d+$/;
     let org = null;
     if (uuidPattern.test(orgId)) {
@@ -305,7 +308,9 @@ export class BroadcastService {
     } else if (hederaPattern.test(orgId)) {
       org = await this.orgRepo.findOne({ where: { hederaAccountId: orgId } });
     } else {
-      org = await this.orgRepo.findOne({ where: { name: ILike(`%${orgId}%`) } });
+      org = await this.orgRepo.findOne({
+        where: { name: ILike(`%${orgId}%`) },
+      });
     }
     if (!org) {
       throw new BroadcastOrgNotFoundException(orgId);

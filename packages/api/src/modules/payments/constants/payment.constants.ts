@@ -46,8 +46,8 @@ export const PAYMENT_CONSTANTS = {
     USDC: 6,
   } as const,
 
-  /** HCS payment message version */
-  HCS_PAYLOAD_VERSION: "1.0",
+  /** HCS payment message version (integer per HCS spec) */
+  HCS_PAYLOAD_VERSION: 1,
 
   /** Maximum transaction fee in HBAR (safety limit) */
   MAX_TRANSACTION_FEE_HBAR: 2,

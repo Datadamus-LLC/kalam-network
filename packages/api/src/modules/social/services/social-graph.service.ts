@@ -37,8 +37,9 @@ import type {
  * Submitted as JSON to the platform-wide social graph HCS topic.
  */
 interface HcsSocialGraphEvent {
-  v: "1.0";
+  version: 1;
   type: "follow" | "unfollow";
+  timestamp: string;
   actor: string;
   target: string;
 }
@@ -201,8 +202,9 @@ export class SocialGraphService {
 
     // 6. Submit follow event to HCS in background (fire-and-forget)
     const hcsEvent: HcsSocialGraphEvent = {
-      v: "1.0",
+      version: 1,
       type: "follow",
+      timestamp: new Date().toISOString(),
       actor: followerAccountId,
       target: targetAccountId,
     };
@@ -335,8 +337,9 @@ export class SocialGraphService {
 
     // 5. Submit unfollow event to HCS in background (fire-and-forget)
     const hcsEvent: HcsSocialGraphEvent = {
-      v: "1.0",
+      version: 1,
       type: "unfollow",
+      timestamp: new Date().toISOString(),
       actor: followerAccountId,
       target: targetAccountId,
     };

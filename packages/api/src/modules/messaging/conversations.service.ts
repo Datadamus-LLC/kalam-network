@@ -254,7 +254,10 @@ export class ConversationsService {
     let encryptedKeys: Record<string, string> | null = null;
     if (conversation.encryptedKeysJson) {
       try {
-        encryptedKeys = JSON.parse(conversation.encryptedKeysJson) as Record<string, string>;
+        encryptedKeys = JSON.parse(conversation.encryptedKeysJson) as Record<
+          string,
+          string
+        >;
       } catch {
         encryptedKeys = null;
       }
@@ -336,7 +339,10 @@ export class ConversationsService {
     let encryptedKeys: Record<string, string> | null = null;
     if (conversation.encryptedKeysJson) {
       try {
-        encryptedKeys = JSON.parse(conversation.encryptedKeysJson) as Record<string, string>;
+        encryptedKeys = JSON.parse(conversation.encryptedKeysJson) as Record<
+          string,
+          string
+        >;
       } catch {
         encryptedKeys = null;
       }
@@ -467,7 +473,10 @@ export class ConversationsService {
       let convEncryptedKeys: Record<string, string> | null = null;
       if (conv.encryptedKeysJson) {
         try {
-          convEncryptedKeys = JSON.parse(conv.encryptedKeysJson) as Record<string, string>;
+          convEncryptedKeys = JSON.parse(conv.encryptedKeysJson) as Record<
+            string,
+            string
+          >;
         } catch {
           convEncryptedKeys = null;
         }
@@ -1015,8 +1024,11 @@ export class ConversationsService {
         { conversationId: conversation.id, hederaAccountId: accountId },
         { lastReadSeq: lastSeq },
       );
-    } catch {
+    } catch (err: unknown) {
       // Non-critical — unread count self-corrects on next sync
+      this.logger.warn(
+        `markAsRead non-critical failure for topic ${topicId}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 

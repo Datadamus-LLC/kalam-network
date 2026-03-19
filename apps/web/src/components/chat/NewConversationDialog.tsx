@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { RiCloseLine, RiSearchLine, RiUserLine } from '@remixicon/react';
 import { cn } from '@/lib/utils';
+import { debounce } from '@/lib/timers';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/hooks';
@@ -40,36 +41,44 @@ export function NewConversationDialog({
   const [participants, setParticipants] = useState<UserResult[]>([]);
   const [groupName, setGroupName] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
-  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced search
+  // Stable debounced search function — recreated only when currentUser changes
+  const { fn: debouncedSearch, cancel: cancelDebouncedSearch } = useMemo(
+    () =>
+      debounce(async (query: string, currentParticipants: UserResult[]) => {
+        setIsSearching(true);
+        try {
+          const result = await api.searchUsers(query, undefined, 10);
+          const users = (result.users as UserResult[]).filter(
+            (u) =>
+              u.hederaAccountId &&
+              u.hederaAccountId !== currentUser?.hederaAccountId &&
+              !currentParticipants.some(
+                (p) => p.hederaAccountId === u.hederaAccountId,
+              ),
+          );
+          setSearchResults(users);
+        } catch {
+          // non-critical — intentionally silent; results reset to empty on failure
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentUser?.hederaAccountId],
+  );
+
+  // Trigger debounced search whenever query or participants change
   useEffect(() => {
     if (!searchQuery.trim()) {
+      cancelDebouncedSearch();
       setSearchResults([]);
       return;
     }
-    if (searchRef.current) clearTimeout(searchRef.current);
-    searchRef.current = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const result = await api.searchUsers(searchQuery, undefined, 10);
-        const users = (result.users as UserResult[]).filter(
-          (u) =>
-            u.hederaAccountId &&
-            u.hederaAccountId !== currentUser?.hederaAccountId &&
-            !participants.some((p) => p.hederaAccountId === u.hederaAccountId),
-        );
-        setSearchResults(users);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300);
-    return () => {
-      if (searchRef.current) clearTimeout(searchRef.current);
-    };
-  }, [searchQuery, participants]);
+    debouncedSearch(searchQuery, participants);
+    return cancelDebouncedSearch;
+  }, [searchQuery, participants, debouncedSearch, cancelDebouncedSearch]);
 
   const handleSelectUser = useCallback(
     (user: UserResult) => {

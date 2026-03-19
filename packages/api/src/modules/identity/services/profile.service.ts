@@ -547,8 +547,11 @@ export class ProfileService {
         this.logger.log(
           `Old DID NFT (serial ${oldSerial}) wiped from user ${hederaAccountId}`,
         );
-      } catch {
+      } catch (err: unknown) {
         // NFT may still be in treasury — try wiping from there
+        this.logger.warn(
+          `Could not wipe DID NFT serial ${oldSerial} from user account ${hederaAccountId}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
 
       if (!wiped) {

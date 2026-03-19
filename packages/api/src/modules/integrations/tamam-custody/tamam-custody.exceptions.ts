@@ -112,3 +112,16 @@ export class TamamCustodyTransactionCreationException extends BaseException {
     );
   }
 }
+
+/**
+ * Thrown when an unsupported HTS token is requested for a custody transfer.
+ */
+export class TamamCustodyUnsupportedTokenException extends BaseException {
+  constructor(currency: string) {
+    super(
+      "TAMAM_CUSTODY_UNSUPPORTED_TOKEN",
+      `Unknown HTS token: ${currency}. Add it to PAYMENT_CONSTANTS.TOKEN_ADDRESSES.`,
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+}

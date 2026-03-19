@@ -46,8 +46,9 @@ import type {
  * HCS Post payload structure submitted to a user's public feed topic.
  */
 interface HcsPostPayload {
-  v: "1.0";
+  version: 1;
   type: "post";
+  timestamp: string;
   sender: string;
   content: {
     text: string;
@@ -179,8 +180,9 @@ export class PostsService {
 
     // 3. Build HCS payload
     const hcsPayload: HcsPostPayload = {
-      v: "1.0",
+      version: 1,
       type: "post",
+      timestamp: new Date().toISOString(),
       sender: authorAccountId,
       content: {
         text: sanitizedText,
@@ -616,7 +618,8 @@ export class PostsService {
     const effectiveLimit = Math.min(Math.max(limit, 1), 100);
 
     // Get followed account IDs
-    const followingIds = await this.socialGraphService.getFollowingAccountIds(userAccountId);
+    const followingIds =
+      await this.socialGraphService.getFollowingAccountIds(userAccountId);
 
     if (followingIds.length === 0) {
       return { posts: [], nextCursor: null, hasMore: false };
@@ -676,7 +679,9 @@ export class PostsService {
       return { posts: postResponses, nextCursor, hasMore };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Failed to get following feed for ${userAccountId}: ${message}`);
+      this.logger.error(
+        `Failed to get following feed for ${userAccountId}: ${message}`,
+      );
       throw new FeedRetrievalFailedException(message);
     }
   }
@@ -849,8 +854,9 @@ export class PostsService {
       try {
         const payloadBuffer = Buffer.from(
           JSON.stringify({
-            v: "1.0",
+            version: 1,
             type: "comment",
+            timestamp: new Date().toISOString(),
             sender: authorAccountId,
             postId,
             content: { text },
@@ -1224,7 +1230,8 @@ export class PostsService {
         avatarUrl: author?.avatarIpfsCid
           ? `${this.configService.get<string>("pinata.gatewayUrl", "")}/${author.avatarIpfsCid}`
           : null,
-        accountType: (author?.accountType as 'individual' | 'business') ?? 'individual',
+        accountType:
+          (author?.accountType as "individual" | "business") ?? "individual",
       },
       text: post.contentText,
       media,

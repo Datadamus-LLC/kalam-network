@@ -48,6 +48,7 @@ export default function DiscoverPage() {
         setFollowState((prev) => ({ ...prev, [accountId]: 'following' }));
       }
     } catch {
+      // non-critical — intentionally silent; UI resets optimistic state on failure
       setFollowState((prev) => { const n = { ...prev }; delete n[accountId]; return n; });
     }
   }, [followState]);

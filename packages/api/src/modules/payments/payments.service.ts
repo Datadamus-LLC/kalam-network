@@ -122,31 +122,33 @@ export class PaymentsService {
 
     // Submit payment receipt to HCS (only if topicId provided)
     let hcsSequenceNumber: number | null = null;
-    if (topicId) try {
-      const hcsPayload = {
-        v: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
-        type: "payment",
-        sender: user.hederaAccountId,
-        content: {
-          action: "send",
-          amount,
-          currency,
-          recipient: recipientAccountId,
-          txId: hederaTxId,
-          note: sanitizedNote ?? null,
-        },
-      };
-      const seqStr = await this.hederaService.submitMessage(
-        topicId,
-        Buffer.from(JSON.stringify(hcsPayload)),
-      );
-      hcsSequenceNumber = parseInt(seqStr, 10);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(
-        `HCS receipt submission failed (non-blocking): ${message}`,
-      );
-    }
+    if (topicId)
+      try {
+        const hcsPayload = {
+          version: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
+          type: "payment",
+          timestamp: new Date().toISOString(),
+          sender: user.hederaAccountId,
+          content: {
+            action: "send",
+            amount,
+            currency,
+            recipient: recipientAccountId,
+            txId: hederaTxId,
+            note: sanitizedNote ?? null,
+          },
+        };
+        const seqStr = await this.hederaService.submitMessage(
+          topicId,
+          Buffer.from(JSON.stringify(hcsPayload)),
+        );
+        hcsSequenceNumber = parseInt(seqStr, 10);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `HCS receipt submission failed (non-blocking): ${message}`,
+        );
+      }
 
     // Index the payment
     const paymentId = uuidv4();
@@ -234,31 +236,33 @@ export class PaymentsService {
 
     // Submit payment request to HCS (only if topicId provided)
     let hcsSequenceNumber: number | null = null;
-    if (topicId) try {
-      const hcsPayload = {
-        v: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
-        type: "payment_request",
-        sender: user.hederaAccountId,
-        content: {
-          action: "request",
-          amount,
-          currency,
-          note: sanitizedDescription ?? null,
-          requestId,
-          status: "pending",
-          expiresAt: expiresAt.toISOString(),
-          paidTxHash: null,
-        },
-      };
-      const seqStr = await this.hederaService.submitMessage(
-        topicId,
-        Buffer.from(JSON.stringify(hcsPayload)),
-      );
-      hcsSequenceNumber = parseInt(seqStr, 10);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new HcsSubmissionException(topicId ?? "", message);
-    }
+    if (topicId)
+      try {
+        const hcsPayload = {
+          version: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
+          type: "payment_request",
+          timestamp: new Date().toISOString(),
+          sender: user.hederaAccountId,
+          content: {
+            action: "request",
+            amount,
+            currency,
+            note: sanitizedDescription ?? null,
+            requestId,
+            status: "pending",
+            expiresAt: expiresAt.toISOString(),
+            paidTxHash: null,
+          },
+        };
+        const seqStr = await this.hederaService.submitMessage(
+          topicId,
+          Buffer.from(JSON.stringify(hcsPayload)),
+        );
+        hcsSequenceNumber = parseInt(seqStr, 10);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new HcsSubmissionException(topicId ?? "", message);
+      }
 
     // Find the conversation for this topic
     const member = await this.memberRepo
@@ -358,8 +362,9 @@ export class PaymentsService {
     if (topicId) {
       try {
         const hcsPayload = {
-          v: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
+          version: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
           type: "payment_request_update",
+          timestamp: new Date().toISOString(),
           requestId,
           status: "paid",
           paidTxId: hederaTxId,
@@ -445,8 +450,9 @@ export class PaymentsService {
     // Submit decline to HCS
     try {
       const hcsPayload = {
-        v: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
+        version: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
         type: "payment_request_update",
+        timestamp: new Date().toISOString(),
         requestId,
         status: "declined",
         reason: reason ?? null,
@@ -496,8 +502,9 @@ export class PaymentsService {
     // Submit cancellation to HCS
     try {
       const hcsPayload = {
-        v: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
+        version: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
         type: "payment_request_update",
+        timestamp: new Date().toISOString(),
         requestId,
         status: "cancelled",
         updatedBy: user.hederaAccountId,
@@ -549,7 +556,10 @@ export class PaymentsService {
     this.validateCurrency(dto.currency);
     this.validateAmount(dto.totalAmount);
     if (dto.topicId) {
-      await this.verifyConversationMembership(user.hederaAccountId, dto.topicId);
+      await this.verifyConversationMembership(
+        user.hederaAccountId,
+        dto.topicId,
+      );
     }
 
     const participantCount = dto.participantAccountIds.length;
@@ -596,30 +606,32 @@ export class PaymentsService {
 
     // Submit split event to HCS (non-blocking, only if topicId provided)
     let hcsSequenceNumber: string | null = null;
-    if (dto.topicId) try {
-      const hcsPayload = {
-        v: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
-        type: "split_payment",
-        sender: user.hederaAccountId,
-        content: {
-          totalAmount: dto.totalAmount,
-          currency: dto.currency,
-          splitMethod: dto.splitMethod,
-          participantCount,
-          requestIds,
-          note: dto.note ?? null,
-        },
-      };
-      hcsSequenceNumber = await this.hederaService.submitMessage(
-        dto.topicId,
-        Buffer.from(JSON.stringify(hcsPayload)),
-      );
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(
-        `HCS split payment event failed (non-blocking): ${message}`,
-      );
-    }
+    if (dto.topicId)
+      try {
+        const hcsPayload = {
+          version: PAYMENT_CONSTANTS.HCS_PAYLOAD_VERSION,
+          type: "split_payment",
+          timestamp: new Date().toISOString(),
+          sender: user.hederaAccountId,
+          content: {
+            totalAmount: dto.totalAmount,
+            currency: dto.currency,
+            splitMethod: dto.splitMethod,
+            participantCount,
+            requestIds,
+            note: dto.note ?? null,
+          },
+        };
+        hcsSequenceNumber = await this.hederaService.submitMessage(
+          dto.topicId,
+          Buffer.from(JSON.stringify(hcsPayload)),
+        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `HCS split payment event failed (non-blocking): ${message}`,
+        );
+      }
 
     this.logger.log(
       `Split payment created: ${requestIds.length} requests, total ${dto.totalAmount} ${dto.currency}`,
@@ -754,16 +766,31 @@ export class PaymentsService {
     const page = hasMore ? results.slice(0, pageSize) : results;
 
     // Batch-fetch counterparty names by Hedera account ID
-    const counterpartyAccountIds = [...new Set(page.map((p) =>
-      p.senderAccountId === hederaAccountId ? p.recipientAccountId : p.senderAccountId,
-    ))];
-    const counterpartyUsers2 = counterpartyAccountIds.length > 0
-      ? await this.userRepo.find({ where: { hederaAccountId: In(counterpartyAccountIds) }, select: ["hederaAccountId", "displayName"] })
-      : [];
-    const counterpartyAccountMap = new Map(counterpartyUsers2.map((u) => [u.hederaAccountId, u.displayName]));
+    const counterpartyAccountIds = [
+      ...new Set(
+        page.map((p) =>
+          p.senderAccountId === hederaAccountId
+            ? p.recipientAccountId
+            : p.senderAccountId,
+        ),
+      ),
+    ];
+    const counterpartyUsers2 =
+      counterpartyAccountIds.length > 0
+        ? await this.userRepo.find({
+            where: { hederaAccountId: In(counterpartyAccountIds) },
+            select: ["hederaAccountId", "displayName"],
+          })
+        : [];
+    const counterpartyAccountMap = new Map(
+      counterpartyUsers2.map((u) => [u.hederaAccountId, u.displayName]),
+    );
 
     const transactions: TransactionResponse[] = page.map((p) => {
-      const cpAccountId = p.senderAccountId === hederaAccountId ? p.recipientAccountId : p.senderAccountId;
+      const cpAccountId =
+        p.senderAccountId === hederaAccountId
+          ? p.recipientAccountId
+          : p.senderAccountId;
       return {
         id: p.id,
         direction: p.senderAccountId === hederaAccountId ? "sent" : "received",
@@ -872,10 +899,16 @@ export class PaymentsService {
 
     // Batch-fetch counterparty display names
     const counterpartyIds = [...new Set(page.map((t) => t.counterpartyId))];
-    const counterpartyUsers = counterpartyIds.length > 0
-      ? await this.userRepo.find({ where: { id: In(counterpartyIds) }, select: ["id", "displayName", "hederaAccountId"] })
-      : [];
-    const counterpartyMap = new Map(counterpartyUsers.map((u) => [u.id, u.displayName ?? u.hederaAccountId]));
+    const counterpartyUsers =
+      counterpartyIds.length > 0
+        ? await this.userRepo.find({
+            where: { id: In(counterpartyIds) },
+            select: ["id", "displayName", "hederaAccountId"],
+          })
+        : [];
+    const counterpartyMap = new Map(
+      counterpartyUsers.map((u) => [u.id, u.displayName ?? u.hederaAccountId]),
+    );
 
     const transactions: TransactionResponse[] = page.map((t) =>
       this.toTransactionResponse(t, counterpartyMap.get(t.counterpartyId)),

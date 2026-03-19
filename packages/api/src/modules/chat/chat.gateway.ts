@@ -7,6 +7,7 @@ import {
   OnGatewayDisconnect,
   ConnectedSocket,
   MessageBody,
+  WsException,
 } from "@nestjs/websockets";
 import { Server, Socket, Namespace } from "socket.io";
 import { Logger, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
@@ -218,7 +219,7 @@ export class ChatGateway
         this.logger.warn(
           `Socket ${socket.id} rejected at middleware: no token provided`,
         );
-        return next(new Error("Authentication token is required"));
+        return next(new WsException("Authentication token is required"));
       }
 
       try {
@@ -230,7 +231,7 @@ export class ChatGateway
         this.logger.warn(
           `Socket ${socket.id} rejected at middleware: invalid token — ${reason}`,
         );
-        next(new Error("Invalid or expired authentication token"));
+        next(new WsException("Invalid or expired authentication token"));
       }
     });
 
