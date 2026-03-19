@@ -53,7 +53,7 @@ export default () => {
       username: env.DB_USERNAME,
       password: env.DB_PASSWORD,
       database: env.DB_DATABASE,
-      synchronize: false,
+      synchronize: env.DB_SYNCHRONIZE === "true",
       logging: env.NODE_ENV === "development",
     },
 
