@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getSocket, closeSocket } from '@/lib/socket';
+import { onConnectionStateChange, disconnectSockets } from '@/lib/socket';
 
 interface UseSocketReturn {
   connected: boolean;
@@ -12,29 +12,12 @@ export function useSocket(): UseSocketReturn {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // Trigger lazy socket init and subscribe to connection state changes
-    const socket = getSocket();
-    setConnected(socket.connected);
-
-    const handleConnect = () => {
-      setConnected(true);
-    };
-
-    const handleDisconnect = () => {
-      setConnected(false);
-    };
-
-    socket.on('connect', handleConnect);
-    socket.on('disconnect', handleDisconnect);
-
-    return () => {
-      socket.off('connect', handleConnect);
-      socket.off('disconnect', handleDisconnect);
-    };
+    // Subscribe to connection state — this also triggers lazy socket init
+    const unsubscribe = onConnectionStateChange((state) => {
+      setConnected(state === 'connected');
+    });
+    return unsubscribe;
   }, []);
 
-  return {
-    connected,
-    disconnect: closeSocket,
-  };
+  return { connected, disconnect: disconnectSockets };
 }
