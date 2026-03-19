@@ -408,8 +408,9 @@ class ApiClient {
    * Ensure an encryption key exists — same as generateEncryptionKey but used
    * in contexts where we only want to create the key if one is not already set.
    */
-  ensureEncryptionKey(): Promise<{ encryptionPublicKey: string; encryptionPrivateKey?: string; encryptedBackup?: string; generated: boolean }> {
-    return this.generateEncryptionKey();
+  ensureEncryptionKey(force = false): Promise<{ encryptionPublicKey: string; encryptionPrivateKey?: string; encryptedBackup?: string; generated: boolean }> {
+    const url = force ? '/wallet/encryption-key?force=true' : '/wallet/encryption-key';
+    return this.request('POST', url);
   }
 
   /** Store a PIN-encrypted private key backup on the server. */

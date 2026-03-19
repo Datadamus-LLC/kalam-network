@@ -703,7 +703,21 @@ export default function SettingsPage() {
                                 setPendingPrivateKey(Buffer.from(pk).toString('base64'));
                                 setShowPinSetup(true);
                               } else {
-                                void handleEnsureEncryptionKey();
+                                // Key exists server-side but not locally — force regenerate
+                                void (async () => {
+                                  setIsEnsuringKey(true);
+                                  try {
+                                    const { storePrivateKey } = await import("@/lib/crypto-utils");
+                                    const result = await api.ensureEncryptionKey(true);
+                                    if (result.encryptionPrivateKey) {
+                                      storePrivateKey(result.encryptionPrivateKey, user?.hederaAccountId ?? undefined);
+                                      setPendingPrivateKey(result.encryptionPrivateKey);
+                                      setShowPinSetup(true);
+                                    }
+                                  } finally {
+                                    setIsEnsuringKey(false);
+                                  }
+                                })();
                               }
                             }}
                           >

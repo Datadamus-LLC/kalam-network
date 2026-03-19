@@ -4,6 +4,7 @@ import {
   Put,
   Get,
   Body,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -159,9 +160,10 @@ export class WalletController {
   @HttpCode(HttpStatus.OK)
   async ensureEncryptionKey(
     @CurrentUser() user: JwtPayload,
+    @Query("force") force?: string,
   ): Promise<ApiResponse<EncryptionKeyResult & { encryptedBackup?: string }>> {
     this.logger.log(`Encryption key requested by user ${user.sub}`);
-    const result = await this.walletService.ensureEncryptionKey(user.sub);
+    const result = await this.walletService.ensureEncryptionKey(user.sub, force === "true");
     return {
       success: true,
       data: result,

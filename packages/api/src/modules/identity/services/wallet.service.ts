@@ -142,7 +142,7 @@ export class WalletService {
    * @returns Encryption key result with public key
    * @throws UserNotFoundException if user does not exist
    */
-  async ensureEncryptionKey(userId: string): Promise<EncryptionKeyResult> {
+  async ensureEncryptionKey(userId: string, force = false): Promise<EncryptionKeyResult> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
     });
@@ -151,7 +151,7 @@ export class WalletService {
       throw new UserNotFoundException(userId);
     }
 
-    if (user.encryptionPublicKey) {
+    if (user.encryptionPublicKey && !force) {
       this.logger.log(`User ${userId} already has encryption key`);
       return {
         encryptionPublicKey: user.encryptionPublicKey,
@@ -159,6 +159,10 @@ export class WalletService {
         encryptedBackup: user.encryptedPrivateKeyBackup ?? undefined,
         generated: false,
       } as EncryptionKeyResult & { encryptedBackup?: string };
+    }
+
+    if (force && user.encryptionPublicKey) {
+      this.logger.warn(`User ${userId} forcing encryption key regeneration — old key discarded`);
     }
 
     this.logger.log(`Generating encryption keypair for user ${userId}`);
