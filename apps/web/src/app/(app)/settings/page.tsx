@@ -206,6 +206,7 @@ export default function SettingsPage() {
         setUser({
           ...user,
           displayName: displayName.trim(),
+          username: username.trim() || user.username,
         });
       }
 

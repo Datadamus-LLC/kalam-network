@@ -29,6 +29,7 @@ function getChatSocket(): Socket {
     const token = useAuthStore.getState().token;
     chatSocket = io(`${SOCKET_URL}/chat`, {
       auth: { token },
+      query: { token: token ?? '' },
       transports: ['websocket'],
       autoConnect: true,
       reconnectionAttempts: 3,
@@ -44,6 +45,7 @@ function getNotifSocket(): Socket {
     const token = useAuthStore.getState().token;
     notifSocket = io(`${SOCKET_URL}/notifications`, {
       auth: { token },
+      query: { token: token ?? '' },
       transports: ['websocket'],
       autoConnect: true,
       reconnectionAttempts: 3,

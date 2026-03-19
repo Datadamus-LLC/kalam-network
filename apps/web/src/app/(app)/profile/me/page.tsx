@@ -16,6 +16,7 @@ interface OwnProfile {
   bio: string | null;
   avatarUrl: string | null;
   hederaAccountId: string;
+  username: string | null;
   accountType: string;
   kycVerified: boolean;
   kycLevel: string | null;
@@ -154,7 +155,7 @@ export default function MyProfilePage() {
                     {badgeInfo && <ProfileBadge badgeInfo={badgeInfo} />}
                   </div>
                   <p className="text-[13px] text-muted-foreground font-mono mt-0.5">
-                    {profile.hederaAccountId}
+                    {profile.username ? `@${profile.username}` : profile.hederaAccountId}
                   </p>
                   {profile.kycLevel && (
                     <span className="inline-block mt-1.5 px-[8px] py-[2px] text-[11px] rounded-full bg-[rgba(0,186,124,0.1)] text-[#00ba7c] font-semibold">

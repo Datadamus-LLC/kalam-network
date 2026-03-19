@@ -35,6 +35,7 @@ export interface AuthUser {
   status: string;
   accountType: 'individual' | 'business' | null;
   displayName: string | null;
+  username: string | null;
   kycLevel: 'basic' | 'enhanced' | 'institutional' | null;
 }
 

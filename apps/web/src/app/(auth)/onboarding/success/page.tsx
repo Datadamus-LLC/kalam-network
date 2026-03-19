@@ -44,6 +44,7 @@ export default function SuccessPage() {
           status: 'active',
           accountType: data.accountType as 'individual' | 'business',
           displayName: data.displayName,
+          username: (data as Record<string, unknown>).username as string | null ?? null,
           kycLevel: data.kycLevel as 'basic' | 'enhanced' | 'institutional' | null,
         });
         setOnboardingStep('success');

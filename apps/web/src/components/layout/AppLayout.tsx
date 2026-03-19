@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/hooks';
+import { api } from '@/lib/api';
 import { useNotificationStore } from '@/stores/notification.store';
 import { env } from '@/lib/env';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar';
@@ -41,7 +42,7 @@ interface NavItem {
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, setUser, logout } = useAuth();
   const pathname = usePathname();
   const { unreadCount, fetchNotifications, subscribeRealtime, unsubscribeRealtime } =
     useNotificationStore();
@@ -54,6 +55,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     subscribeRealtime();
     return () => unsubscribeRealtime();
   }, [user, fetchNotifications, subscribeRealtime, unsubscribeRealtime]);
+
+  // Sync latest username/profile into auth store on mount
+  useEffect(() => {
+    if (!user) return;
+    if (user.username !== undefined) return; // already hydrated
+    api.getProfile('me').then((profile) => {
+      const p = profile as Record<string, unknown>;
+      if (p.username !== undefined) {
+        setUser({ ...user, username: p.username as string | null });
+      }
+    }).catch(() => { /* non-critical */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const isBusiness = user?.accountType === 'business';
 
@@ -88,7 +102,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
     return `@${id}`;
   };
-  const userHandle = user?.hederaAccountId ? formatHandle(user.hederaAccountId) : '';
+  const userHandle = user?.username ? `@${user.username}` : (user?.hederaAccountId ? formatHandle(user.hederaAccountId) : '');
 
   return (
     <div className="min-h-screen bg-background pt-2">
