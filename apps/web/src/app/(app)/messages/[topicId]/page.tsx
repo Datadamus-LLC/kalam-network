@@ -291,6 +291,22 @@ export default function ChatPage() {
     }
   }, [currentAccountId, pendingEncryptedKeys]);
 
+  // Listen for the 'kalam-key-restored' event dispatched by the app layout
+  // when the user restores their encryption key via the PIN modal.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ accountId: string }>).detail;
+      if (detail.accountId !== currentAccountId || !pendingEncryptedKeys) return;
+      const privateKey = getStoredPrivateKey(currentAccountId);
+      if (!privateKey) return;
+      decryptConversationKey(pendingEncryptedKeys, currentAccountId, privateKey)
+        .then((key) => { if (key) { setSymmetricKey(key); setPendingEncryptedKeys(null); } })
+        .catch(() => { /* decryption failed — banner stays visible */ });
+    };
+    window.addEventListener('kalam-key-restored', handler);
+    return () => window.removeEventListener('kalam-key-restored', handler);
+  }, [currentAccountId, pendingEncryptedKeys]);
+
   // Send message mutation — encrypts client-side before sending
   const sendMessageMutation = useMutation({
     mutationFn: async (text: string) => {

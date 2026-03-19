@@ -87,6 +87,8 @@ export default function AppLayoutWrapper({ children }: { children: ReactNode }) 
     try {
       const privateKey = await unwrapPrivateKeyWithPin(pendingBackup, pin, user.hederaAccountId);
       storePrivateKey(privateKey, user.hederaAccountId);
+      // Notify any open chat page that the encryption key is now available
+      window.dispatchEvent(new CustomEvent('kalam-key-restored', { detail: { accountId: user.hederaAccountId } }));
       setShowPinRestore(false);
       setPendingBackup(null);
     } catch {
