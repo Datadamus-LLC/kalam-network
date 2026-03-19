@@ -4,15 +4,22 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { getStoredPrivateKey, decryptConversationKey, tryDecryptMessageContent } from '@/lib/crypto-utils';
+import {
+  getStoredPrivateKey,
+  decryptConversationKey,
+  tryDecryptMessageContent,
+  unwrapPrivateKeyWithPin,
+  storePrivateKey,
+} from '@/lib/crypto-utils';
 import { useAuth, useConversation } from '@/lib/hooks';
 import { useChatStore, ChatMessage, Conversation } from '@/stores/chat.store';
 import { sendReadReceipt, subscribeToReadReceipts, subscribeToPresence } from '@/lib/socket';
-import { RiEditLine } from '@remixicon/react';
+import { RiEditLine, RiLockLine } from '@remixicon/react';
 import { ConversationHeader } from '@/components/chat/ConversationHeader';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { MessageList, DecryptedMessage } from '@/components/chat/MessageList';
 import { ChatInput } from '@/components/chat/ChatInput';
+import { PinModal } from '@/components/ui/PinModal';
 
 function mapToDecryptedMessage(
   message: ChatMessage,
@@ -78,6 +85,11 @@ export default function ChatPage() {
   const [readReceipts, setReadReceipts] = useState<Map<string, number>>(new Map());
   const [symmetricKey, setSymmetricKey] = useState<Uint8Array | null>(null);
   const [decryptedContentMap, setDecryptedContentMap] = useState<Map<string, string>>(new Map());
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinModalError, setPinModalError] = useState<string | null>(null);
+  const [pinModalLoading, setPinModalLoading] = useState(false);
+  // Holds the encryptedKeys from the conversation so PIN flow can re-derive the symmetric key
+  const [pendingEncryptedKeys, setPendingEncryptedKeys] = useState<Record<string, string> | null>(null);
 
   // Fetch conversation metadata
   const {
@@ -131,7 +143,8 @@ export default function ChatPage() {
     };
   }, [activeConversation, setActiveConversation]);
 
-  // Derive symmetric key from conversation's encryptedKeys + user's X25519 private key
+  // Derive symmetric key from conversation's encryptedKeys + user's X25519 private key.
+  // If the private key is not in localStorage but a server backup exists, trigger the PIN modal.
   useEffect(() => {
     if (!conversationsData || !currentAccountId) return;
     const found = conversationsData.find((c) => c.hcsTopicId === topicId);
@@ -139,19 +152,34 @@ export default function ChatPage() {
     if (!encryptedKeys) {
       return;
     }
-    const privateKey = getStoredPrivateKey();
-    if (!privateKey) {
-      return;
+
+    const privateKey = getStoredPrivateKey(currentAccountId);
+    if (privateKey) {
+      // Key is already available in localStorage — derive the symmetric key immediately
+      decryptConversationKey(encryptedKeys, currentAccountId, privateKey)
+        .then((key) => {
+          if (key) {
+            setSymmetricKey(key);
+          }
+        })
+        .catch(() => {
+          // Derivation failed — store encrypted keys so the PIN banner can re-trigger
+          setPendingEncryptedKeys(encryptedKeys);
+        });
+    } else {
+      // No private key in localStorage — check if the server has a PIN-wrapped backup
+      setPendingEncryptedKeys(encryptedKeys);
+      api.getKeyBackup()
+        .then(({ encryptedBackup }) => {
+          if (encryptedBackup) {
+            // Backup exists on server — prompt user for their PIN
+            setShowPinModal(true);
+          }
+        })
+        .catch(() => {
+          // Could not reach backup endpoint — user can still tap the banner manually
+        });
     }
-    decryptConversationKey(encryptedKeys, currentAccountId, privateKey)
-      .then((key) => {
-        if (key) {
-          setSymmetricKey(key);
-        }
-      })
-      .catch(() => {
-        // Key derivation failed — messages will display without client-side decryption
-      });
   }, [conversationsData, topicId, currentAccountId]);
 
   // Fetch messages for this conversation
@@ -231,6 +259,45 @@ export default function ChatPage() {
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .map((msg) => mapToDecryptedMessage(msg, symmetricKey, decryptedContentMap));
   }, [messagesData, realtimeMessages, symmetricKey, decryptedContentMap]);
+
+  // Whether there are any encrypted messages that are not yet decrypted
+  const hasEncryptedMessages = useMemo(() => {
+    const allMessages = [
+      ...(messagesData ?? []),
+      ...realtimeMessages,
+    ];
+    return allMessages.some((m) => m.encryptedContent);
+  }, [messagesData, realtimeMessages]);
+
+  // PIN modal submit: fetch backup from server, unwrap with PIN, derive symmetric key
+  const handlePinSubmit = useCallback(async (pin: string) => {
+    setPinModalError(null);
+    setPinModalLoading(true);
+    try {
+      const { encryptedBackup } = await api.getKeyBackup();
+      if (!encryptedBackup) {
+        setPinModalError('No key backup found on server');
+        return;
+      }
+      const privateKeyBase64 = await unwrapPrivateKeyWithPin(encryptedBackup, pin, currentAccountId);
+      // Store locally so future sessions skip the PIN modal
+      storePrivateKey(privateKeyBase64, currentAccountId);
+
+      if (pendingEncryptedKeys) {
+        // Convert the base64 private key back to Uint8Array for decryption
+        const privateKeyBytes = Uint8Array.from(Buffer.from(privateKeyBase64, 'base64'));
+        const symKey = await decryptConversationKey(pendingEncryptedKeys, currentAccountId, privateKeyBytes);
+        if (symKey) {
+          setSymmetricKey(symKey);
+        }
+      }
+      setShowPinModal(false);
+    } catch {
+      setPinModalError('Wrong PIN — could not decrypt your key backup');
+    } finally {
+      setPinModalLoading(false);
+    }
+  }, [currentAccountId, pendingEncryptedKeys]);
 
   // Send message mutation — encrypts client-side before sending
   const sendMessageMutation = useMutation({
@@ -337,6 +404,24 @@ export default function ChatPage() {
         />
       )}
 
+      {/* Encryption banner — shown when messages are encrypted but key is not available */}
+      {symmetricKey === null && hasEncryptedMessages && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.04] border-b border-border text-[13px] text-muted-foreground">
+          <RiLockLine size={14} className="flex-shrink-0 text-primary" />
+          <span>Messages are encrypted</span>
+          <button
+            type="button"
+            onClick={() => {
+              setPinModalError(null);
+              setShowPinModal(true);
+            }}
+            className="ml-auto text-primary font-semibold hover:opacity-80 transition-opacity"
+          >
+            Enter PIN to decrypt
+          </button>
+        </div>
+      )}
+
       {/* Message list */}
       <MessageList
         messages={displayMessages}
@@ -357,6 +442,20 @@ export default function ChatPage() {
         disabled={sendMessageMutation.isPending}
       />
       </div>
+
+      {/* PIN modal — shown when key backup exists but private key is not in localStorage */}
+      {showPinModal && (
+        <PinModal
+          mode="enter"
+          onSubmit={handlePinSubmit}
+          onCancel={() => {
+            setShowPinModal(false);
+            setPinModalError(null);
+          }}
+          error={pinModalError}
+          isLoading={pinModalLoading}
+        />
+      )}
     </div>
   );
 }
