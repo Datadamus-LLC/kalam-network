@@ -1,3 +1,4 @@
+import * as path from "path";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -36,7 +37,7 @@ import { AppService } from "./app.service";
         entities: [],
         migrations:
           process.env.NODE_ENV === "production"
-            ? ["dist/database/migrations/**/*.js"]
+            ? [path.join(__dirname, "database/migrations/**/*.js")]
             : ["src/database/migrations/**/*.ts"],
         synchronize: false,
         logging: configService.get<boolean>("database.logging"),
