@@ -43,7 +43,7 @@ export class CreatePostDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(1)
-  @MaxLength(280, { message: 'Post content must not exceed 280 characters' })
+  @MaxLength(280, { message: "Post content must not exceed 280 characters" })
   text!: string;
 
   @IsOptional()

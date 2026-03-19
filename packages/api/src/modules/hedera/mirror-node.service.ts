@@ -120,10 +120,7 @@ export class MirrorNodeService {
    * Returns the balance in smallest token units (divide by 10^decimals for display).
    * Returns 0 if the account has no association or zero balance.
    */
-  async getTokenBalance(
-    accountId: string,
-    tokenId: string,
-  ): Promise<number> {
+  async getTokenBalance(accountId: string, tokenId: string): Promise<number> {
     const url = `${this.baseUrl}/tokens/${encodeURIComponent(tokenId)}/balances?account.id=${encodeURIComponent(accountId)}`;
     const response = await fetch(url);
     if (!response.ok) {

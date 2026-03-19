@@ -14,8 +14,49 @@ out/
 .env.*.local
 .env.test
 
-# Claude Code local settings (machine-specific, has secrets)
-.claude/settings.local.json
+# AI tooling — Claude Code
+.claude/
+.superpowers/
+CLAUDE.md
+
+# Documentation & task tracking (not source code)
+docs/
+tasks/
+
+# Scripts
+scripts/
+packages/api/scripts/
+
+# QA & screenshots
+qa-screenshots/
+*.png
+*.webm
+
+# Tests — E2E
+e2e/
+playwright.config.ts
+playwright-report/
+test-results/
+test-screenshots/
+apps/web/test-results/
+packages/api/test-results/
+packages/api/test/
+
+# Tests — unit
+**/__tests__/
+**/*.spec.ts
+**/*.test.ts
+**/jest.config.ts
+**/tsconfig.spec.json
+packages/api/setup-result.json
+docker-compose.test.yml
+
+# Extra Docker variants (keep only docker-compose.yml)
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# Auto-generated
+apps/web/next-env.d.ts
 
 # IDE
 .idea/

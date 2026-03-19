@@ -18,7 +18,7 @@ export interface PostAuthorResponse {
   accountId: string;
   displayName: string | null;
   avatarUrl: string | null;
-  accountType: 'individual' | 'business';
+  accountType: "individual" | "business";
 }
 
 export interface PostResponseDto {

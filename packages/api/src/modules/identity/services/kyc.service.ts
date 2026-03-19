@@ -394,7 +394,7 @@ export class KycService {
     user: UserEntity,
     customerType: "INDIVIDUAL" | "CORPORATE",
   ): Promise<KycSubmissionResult> {
-    if (this.configService.get<string>('NODE_ENV') === "production") {
+    if (this.configService.get<string>("NODE_ENV") === "production") {
       throw new KycAutoApprovalDisabledException();
     }
 

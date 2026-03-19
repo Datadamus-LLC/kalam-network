@@ -213,10 +213,10 @@ export class WalletService {
    * This enables new-device access without re-keying conversations.
    */
   private wrapPrivateKey(privateKeyBase64: string): string {
-    const wrapKeyHex = this.configService.getOrThrow<string>("ENCRYPTION_WRAP_KEY");
-    const wrapKey = createHash("sha256")
-      .update(wrapKeyHex)
-      .digest();
+    const wrapKeyHex = this.configService.getOrThrow<string>(
+      "ENCRYPTION_WRAP_KEY",
+    );
+    const wrapKey = createHash("sha256").update(wrapKeyHex).digest();
     const iv = randomBytes(12);
     const cipher = createCipheriv("aes-256-gcm", wrapKey, iv);
     const encrypted = Buffer.concat([
@@ -233,10 +233,10 @@ export class WalletService {
 
   /** Unwrap a server-encrypted private key. */
   private unwrapPrivateKey(wrapped: string): string {
-    const wrapKeyHex = this.configService.getOrThrow<string>("ENCRYPTION_WRAP_KEY");
-    const wrapKey = createHash("sha256")
-      .update(wrapKeyHex)
-      .digest();
+    const wrapKeyHex = this.configService.getOrThrow<string>(
+      "ENCRYPTION_WRAP_KEY",
+    );
+    const wrapKey = createHash("sha256").update(wrapKeyHex).digest();
     const { iv, ciphertext, tag } = JSON.parse(wrapped) as {
       iv: string;
       ciphertext: string;

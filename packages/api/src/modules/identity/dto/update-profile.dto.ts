@@ -51,8 +51,7 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   @Matches(/^[a-zA-Z0-9_]{3,30}$/, {
-    message:
-      "Username must be 3-30 chars: letters, numbers, underscores only",
+    message: "Username must be 3-30 chars: letters, numbers, underscores only",
   })
   @Transform(({ value }: { value: string }) => value?.toLowerCase())
   username?: string;

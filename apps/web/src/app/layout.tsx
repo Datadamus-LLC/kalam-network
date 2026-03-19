@@ -6,6 +6,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Kalam',
   description: 'Blockchain-native social platform built on Hedera',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

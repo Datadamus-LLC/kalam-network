@@ -9,7 +9,6 @@ import {
   HttpStatus,
   Logger,
 } from "@nestjs/common";
-import { IsString, IsNotEmpty } from "class-validator";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import {
@@ -163,7 +162,12 @@ export class WalletController {
   ): Promise<ApiResponse<EncryptionKeyResult & { encryptedBackup?: string }>> {
     this.logger.log(`Encryption key requested by user ${user.sub}`);
     const result = await this.walletService.ensureEncryptionKey(user.sub);
-    return { success: true, data: result, error: null, timestamp: new Date().toISOString() };
+    return {
+      success: true,
+      data: result,
+      error: null,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**
@@ -178,7 +182,12 @@ export class WalletController {
     @Body() body: { encryptedBackup: string },
   ): Promise<ApiResponse<{ stored: boolean }>> {
     await this.walletService.storeKeyBackup(user.sub, body.encryptedBackup);
-    return { success: true, data: { stored: true }, error: null, timestamp: new Date().toISOString() };
+    return {
+      success: true,
+      data: { stored: true },
+      error: null,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**
@@ -191,6 +200,11 @@ export class WalletController {
     @CurrentUser() user: JwtPayload,
   ): Promise<ApiResponse<{ encryptedBackup: string | null }>> {
     const encryptedBackup = await this.walletService.getKeyBackup(user.sub);
-    return { success: true, data: { encryptedBackup }, error: null, timestamp: new Date().toISOString() };
+    return {
+      success: true,
+      data: { encryptedBackup },
+      error: null,
+      timestamp: new Date().toISOString(),
+    };
   }
 }

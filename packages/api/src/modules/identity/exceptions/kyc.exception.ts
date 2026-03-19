@@ -149,7 +149,7 @@ export class OnboardingException extends HttpException {
  * Configure MIRSAD_KYC_ENABLED=true and supply valid MIRSAD_KYC_API_URL credentials.
  */
 export class KycAutoApprovalDisabledException extends HttpException {
-  public readonly code = 'KYC_AUTO_APPROVAL_DISABLED';
+  public readonly code = "KYC_AUTO_APPROVAL_DISABLED";
 
   constructor() {
     super(
@@ -157,9 +157,9 @@ export class KycAutoApprovalDisabledException extends HttpException {
         success: false,
         data: null,
         error: {
-          code: 'KYC_AUTO_APPROVAL_DISABLED',
+          code: "KYC_AUTO_APPROVAL_DISABLED",
           message:
-            'KYC auto-approval is disabled in production. Configure Mirsad AI credentials.',
+            "KYC auto-approval is disabled in production. Configure Mirsad AI credentials.",
         },
         timestamp: new Date().toISOString(),
       },

@@ -37,7 +37,7 @@ export const PAYMENT_CONSTANTS = {
 
   /** HTS token addresses on Hedera */
   TOKEN_ADDRESSES: {
-    TMUSD: process.env.TMUSD_TOKEN_ID ?? '0.0.7700096', // Override via TMUSD_TOKEN_ID env var for different networks
+    TMUSD: process.env.TMUSD_TOKEN_ID ?? "0.0.7700096", // Override via TMUSD_TOKEN_ID env var for different networks
   } as const,
 
   /** HTS token decimal precision */
