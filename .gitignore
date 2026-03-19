@@ -45,3 +45,6 @@ temp/
 
 # FUSE filesystem artifacts
 .fuse_hidden*
+
+# Git worktrees
+.worktrees/
