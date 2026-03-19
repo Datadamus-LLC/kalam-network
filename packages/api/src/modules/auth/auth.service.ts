@@ -6,6 +6,11 @@ import {
   UnauthorizedException,
   NotFoundException,
 } from "@nestjs/common";
+// NOTE: Using NestJS HTTP status exceptions (BadRequestException, UnauthorizedException, etc.)
+// is acceptable here as they map to standard HTTP status codes. These are not mocks or test doubles,
+// but framework-provided exceptions for HTTP semantics. Custom exceptions would be appropriate for
+// domain-specific business errors (e.g., InvalidOtpException, UserAlreadyOnboardedException).
+// If those custom exceptions are needed in the future, they should extend BaseException.
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { RegisterDto, hasContactMethod } from "./dto/register.dto";
