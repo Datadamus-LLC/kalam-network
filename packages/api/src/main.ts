@@ -30,8 +30,11 @@ async function bootstrap() {
     }),
   );
 
-  // CORS
-  const corsOrigin = configService.get<string>("cors.origin");
+  // CORS — supports comma-separated list of allowed origins
+  const corsOriginRaw = configService.get<string>("cors.origin") ?? "";
+  const corsOrigin = corsOriginRaw.includes(",")
+    ? corsOriginRaw.split(",").map((o) => o.trim())
+    : corsOriginRaw;
   app.enableCors({
     origin: corsOrigin,
     credentials: true,
