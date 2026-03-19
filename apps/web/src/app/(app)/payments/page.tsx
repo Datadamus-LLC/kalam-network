@@ -658,7 +658,7 @@ export default function PaymentsPage() {
                   {selectedTransaction.direction === 'sent' ? 'To' : 'From'}
                 </span>
                 <span className="font-mono text-[12px] text-muted-foreground max-w-[60%] text-right truncate">
-                  {selectedTransaction.counterpartyId}
+                  {selectedTransaction.counterpartyName ?? selectedTransaction.counterpartyId}
                 </span>
               </div>
               {selectedTransaction.description && (

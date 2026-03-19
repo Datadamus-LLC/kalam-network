@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { RiSearchLine, RiCloseLine } from '@remixicon/react';
 import { cn } from '@/lib/utils';
@@ -53,6 +53,27 @@ export default function DiscoverPage() {
     select: (data) => data.users ?? [],
     enabled: query.trim().length > 0,
   });
+
+  // Initialise follow state for search results
+  useEffect(() => {
+    if (!currentUser?.hederaAccountId || results.length === 0) return;
+    const myId = currentUser.hederaAccountId;
+    results.forEach((user: { hederaAccountId: string }) => {
+      if (user.hederaAccountId === myId) return;
+      if (followState[user.hederaAccountId] !== undefined) return;
+      api.checkIsFollowing(myId, user.hederaAccountId)
+        .then((res) => {
+          const following = (res as unknown as { data?: { isFollowing: boolean }; isFollowing?: boolean }).data?.isFollowing
+            ?? (res as unknown as { isFollowing: boolean }).isFollowing
+            ?? false;
+          if (following) {
+            setFollowState((prev) => ({ ...prev, [user.hederaAccountId]: 'following' }));
+          }
+        })
+        .catch(() => { /* non-critical */ });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results, currentUser?.hederaAccountId]);
 
   return (
     <div className="flex min-h-full">

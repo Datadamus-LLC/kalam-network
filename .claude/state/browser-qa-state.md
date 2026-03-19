@@ -1,17 +1,10 @@
-# Browser QA State — Run 2026-03-18 (Session 2 — Full Re-test)
+# Browser QA State — Full Coverage Run 2026-03-19
 
-> **Folder**: qa-screenshots/
+> **Folder**: qa-screenshots/run-2026-03-19/
 > **Users**: test-individual@test.hedera.social / test-org@test.hedera.social (OTP: 123123)
 > **Method**: Real browser — click every button, fill every input, screenshot every action.
 > **Status**: IN PROGRESS
-
----
-
-## Session: 2026-03-18 (Session 2)
-
-### Servers
-- API: ?
-- Frontend: ?
+> **Screenshots start at**: QA-52
 
 ---
 
@@ -23,83 +16,128 @@
 - [ ] Logout
 
 ### FEED
-- [ ] For You tab loads
+- [ ] For You tab loads with posts
 - [ ] Trending tab
 - [ ] Following tab
-- [ ] Compose post — type text, counter, submit
+- [ ] Compose post — type text, character counter, submit
 - [ ] Like a post
 - [ ] Unlike a post
-- [ ] Open comments
+- [ ] Open post comments
 - [ ] Add a comment
 - [ ] Delete own comment
 - [ ] Delete own post
 
 ### DISCOVER
-- [ ] Page loads
-- [ ] Search by name
-- [ ] Follow button in results
-- [ ] Click user → profile
+- [ ] Page loads with search + trending
+- [ ] Search by name — results appear
+- [ ] Follow button works
+- [ ] Click user → goes to their profile
 
 ### PROFILE
-- [ ] Own profile page
+- [ ] Own profile page (profile/me)
 - [ ] Other user profile
-- [ ] Follow/unfollow
+- [ ] Follow/unfollow from profile
+- [ ] Tabs: Posts / Replies / Payments
 
 ### MESSAGES
 - [ ] Messages list loads
-- [ ] New conversation dialog
-- [ ] Create conversation
-- [ ] Conversation in list
-- [ ] Open conversation → chat
-- [ ] Send a message — text appears, timestamp
-- [ ] Send another message — both visible
-- [ ] Messages do NOT disappear after sending
+- [ ] New conversation dialog opens
+- [ ] Search in new conversation dialog
+- [ ] Create new conversation
+- [ ] Open existing conversation
+- [ ] Send a message
+- [ ] Message appears with timestamp
+- [ ] Leave conversation button
 
 ### NOTIFICATIONS
-- [ ] Notification list loads
-- [ ] Category filter tabs (All/Messages/Payments/Social/System)
-- [ ] Preferences toggles
+- [ ] All tab loads
+- [ ] Messages tab filter
+- [ ] Payments tab filter
+- [ ] Social tab filter
+- [ ] System tab filter
+- [ ] Mark all read button
+- [ ] Select individual notification
+- [ ] Preferences toggles (all 4)
 
-### PAYMENTS — FULL COVERAGE
-- [ ] Page loads, balance shown
-- [ ] Transaction history list (empty state)
-- [ ] Sent/Received/All tabs
-- [ ] **Send TMUSD modal** — opens, shows TMUSD (not HBAR), no currency dropdown
-- [ ] Send form — enter amount, note, recipient
-- [ ] Send review step — confirm shows TMUSD
-- [ ] Send confirm button
-- [ ] **Request payment modal** — opens, shows TMUSD
-- [ ] Request form — amount, description
-- [ ] Request submit
-- [ ] **Split payment modal** — opens, shows TMUSD
-- [ ] Split — add participant (type account ID, click +)
-- [ ] Split — remove participant
-- [ ] Split — equal split shows per-person amount
-- [ ] Split — custom amounts mode
-- [ ] Split — review step
-- [ ] Split — submit
+### PAYMENTS
+- [ ] Page loads with balance
+- [ ] All tab
+- [ ] Sent tab filter
+- [ ] Received tab filter
+- [ ] Search transactions field
+- [ ] Filters button
+- [ ] Refresh balance button
+- [ ] Refresh transactions button
+- [ ] Send modal — opens
+- [ ] Send modal — currency shows TMUSD
+- [ ] Send modal — enter recipient
+- [ ] Send modal — enter amount
+- [ ] Send modal — enter note
+- [ ] Send modal — Review button enabled
+- [ ] Send modal — review step shows correct details
+- [ ] Send modal — Cancel
+- [ ] Request modal — opens
+- [ ] Request modal — enter details
+- [ ] Request modal — submit
+- [ ] Split modal — opens
+- [ ] Split modal — add participant
+- [ ] Split modal — remove participant
+- [ ] Split modal — cancel
+- [ ] Click transaction → detail view
+- [ ] Recent Contacts — Send button
 
 ### BROADCASTS
-- [ ] Page loads (no error, no "Validation failed")
-- [ ] Subscribe form visible
-- [ ] Enter topic ID, subscribe button
+- [ ] Page loads without error
+- [ ] Subscribe to channel input
+- [ ] Subscribe button enables on input
+- [ ] Refresh button
+- [ ] Right panel stats
 
-### SETTINGS
-- [ ] Profile tab — all fields, save
-- [ ] Account tab
-- [ ] Wallet & Encryption tab
-- [ ] Appearance tab — dark/light toggle
-- [ ] Danger Zone tab
+### SETTINGS — PROFILE TAB
+- [ ] Display name field pre-populated
+- [ ] Username field present with @ prefix
+- [ ] Username availability check (type username → green "Available")
+- [ ] Bio field
+- [ ] Avatar URL field
+- [ ] Save Changes button
+- [ ] Success toast on save
 
-### MOBILE (375px)
-- [ ] Landing page
-- [ ] Feed
-- [ ] Sidebar hamburger
+### SETTINGS — ACCOUNT TAB
+- [ ] Account info visible
+
+### SETTINGS — WALLET & ENCRYPTION TAB
+- [ ] Wallet info visible
+- [ ] Set PIN button or form
+- [ ] Encryption key status
+
+### SETTINGS — APPEARANCE TAB
+- [ ] Dark/Light mode toggle works
+
+### SETTINGS — DANGER ZONE TAB
+- [ ] Delete account section visible
+
+### ORGANIZATION (individual user)
+- [ ] Organization page shows Create form
+- [ ] Name input
+- [ ] Create Organization button (disabled when empty)
+
+### MOBILE — 375px width
+- [ ] Landing page mobile
+- [ ] Feed mobile
+- [ ] Hamburger menu opens
+- [ ] Nav items visible in menu
+- [ ] Payments mobile
 
 ### ORG USER (test-org@test.hedera.social)
-- [ ] Login as org
-- [ ] Organization nav link visible
-- [ ] Organization page loads
+- [ ] Login as org user
+- [ ] Organization nav link in sidebar
+- [ ] Org page loads with org dashboard
+- [ ] Back to Feed link visible
+- [ ] Overview / Members / Broadcasts / Settings tabs
+- [ ] Members tab
+- [ ] Broadcasts tab links to /broadcasts
+- [ ] Org Settings tab
+- [ ] Logout org user
 
 ---
 
@@ -111,5 +149,5 @@
 ---
 
 ## Next Session
-- Status: IN PROGRESS
-- Last screenshot: QA-46 (from previous session)
+- Status: STARTING FRESH (QA-52)
+- Logged in as: test-individual@test.hedera.social

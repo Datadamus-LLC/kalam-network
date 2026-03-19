@@ -102,6 +102,14 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     return () => { cancelled = true; };
   }, [accountId]);
 
+  // Fetch initial follow status
+  useEffect(() => {
+    if (!currentUser?.hederaAccountId || !accountId || accountId === 'me' || accountId === currentUser.hederaAccountId) return;
+    api.checkIsFollowing(currentUser.hederaAccountId, accountId)
+      .then((res) => { setIsFollowing((res as unknown as { data?: { isFollowing: boolean }; isFollowing?: boolean }).data?.isFollowing ?? (res as unknown as { isFollowing: boolean }).isFollowing ?? false); })
+      .catch(() => { /* non-critical */ });
+  }, [accountId, currentUser?.hederaAccountId]);
+
   const handleFollow = useCallback(async () => {
     if (followLoading) return;
     setFollowLoading(true);

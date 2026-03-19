@@ -521,6 +521,11 @@ class ApiClient {
     return this.request('POST', '/social/unfollow', { body: { targetAccountId } });
   }
 
+  /** Check if the current user is following a target account. */
+  checkIsFollowing(myAccountId: string, targetAccountId: string): Promise<{ isFollowing: boolean }> {
+    return this.request('GET', `/social/${myAccountId}/is-following/${targetAccountId}`);
+  }
+
   /** Search for users by query string. */
   async searchUsers(
     query: string,
