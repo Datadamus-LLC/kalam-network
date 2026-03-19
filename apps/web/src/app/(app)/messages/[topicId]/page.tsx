@@ -167,18 +167,10 @@ export default function ChatPage() {
           setPendingEncryptedKeys(encryptedKeys);
         });
     } else {
-      // No private key in localStorage — check if the server has a PIN-wrapped backup
+      // No private key in localStorage — store encrypted keys so the banner's
+      // "Enter PIN to decrypt" button can trigger restore. The app layout already
+      // auto-prompted at login; here we only set up the persistent banner.
       setPendingEncryptedKeys(encryptedKeys);
-      api.getKeyBackup()
-        .then(({ encryptedBackup }) => {
-          if (encryptedBackup) {
-            // Backup exists on server — prompt user for their PIN
-            setShowPinModal(true);
-          }
-        })
-        .catch(() => {
-          // Could not reach backup endpoint — user can still tap the banner manually
-        });
     }
   }, [conversationsData, topicId, currentAccountId]);
 
