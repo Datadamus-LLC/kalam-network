@@ -1,0 +1,149 @@
+<h2>Which navigation layout?</h2>
+<p class="subtitle">This is the shell everything lives inside. Current layout: sidebar on left + sticky header. Pick what feels right for a social + payments app.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="sidebar-wide" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f12;padding:12px;border-radius:8px;min-height:180px;display:flex;gap:8px;overflow:hidden;">
+      <!-- Sidebar -->
+      <div style="width:52px;background:#18181b;border-radius:6px;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:8px;flex-shrink:0;">
+        <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#7c3aed,#a855f7);"></div>
+        <div style="width:1px;height:1px;margin:4px 0;"></div>
+        <div style="width:26px;height:26px;border-radius:6px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;">🏠</div>
+        <div style="width:26px;height:26px;border-radius:6px;background:transparent;display:flex;align-items:center;justify-content:center;font-size:12px;">💬</div>
+        <div style="width:26px;height:26px;border-radius:6px;background:transparent;display:flex;align-items:center;justify-content:center;font-size:12px;">💸</div>
+        <div style="width:26px;height:26px;border-radius:6px;background:transparent;display:flex;align-items:center;justify-content:center;font-size:12px;">🔔</div>
+        <div style="width:26px;height:26px;border-radius:6px;background:transparent;display:flex;align-items:center;justify-content:center;font-size:12px;">🔍</div>
+        <div style="margin-top:auto;width:26px;height:26px;border-radius:50%;background:#374151;"></div>
+      </div>
+      <!-- Main content -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;overflow:hidden;">
+        <div style="background:#18181b;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="color:#9ca3af;font-size:10px;">Feed</span>
+          <div style="width:20px;height:20px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:9px;color:white;">3</div>
+        </div>
+        <div style="background:#18181b;border-radius:6px;padding:8px;flex:1;">
+          <div style="display:flex;gap:6px;align-items:flex-start;">
+            <div style="width:22px;height:22px;border-radius:50%;background:#4f46e5;flex-shrink:0;"></div>
+            <div>
+              <div style="color:#e5e7eb;font-size:10px;font-weight:500;">alex.hedera</div>
+              <div style="color:#6b7280;font-size:9px;margin-top:2px;">Just received 150 ℏ from team split...</div>
+              <div style="display:flex;gap:8px;margin-top:4px;">
+                <span style="color:#7c3aed;font-size:9px;">♥ 24</span>
+                <span style="color:#6b7280;font-size:9px;">💬 5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Icon Rail (Discord-style)</h3>
+      <p>Narrow icon sidebar (~52px), no labels. Clean and compact. More space for content. Tooltips on hover reveal labels. Used by Discord, Figma, Linear.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="sidebar-labeled" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f12;padding:12px;border-radius:8px;min-height:180px;display:flex;gap:8px;overflow:hidden;">
+      <!-- Wide labeled sidebar -->
+      <div style="width:110px;background:#18181b;border-radius:6px;display:flex;flex-direction:column;padding:10px 8px;gap:4px;flex-shrink:0;">
+        <div style="color:#7c3aed;font-size:10px;font-weight:700;padding:4px 6px;margin-bottom:4px;">Hedera</div>
+        <div style="background:#7c3aed22;border-radius:4px;padding:4px 6px;display:flex;align-items:center;gap:5px;">
+          <span style="font-size:10px;">🏠</span>
+          <span style="color:#a855f7;font-size:9px;font-weight:500;">Feed</span>
+        </div>
+        <div style="padding:4px 6px;display:flex;align-items:center;gap:5px;">
+          <span style="font-size:10px;">💬</span>
+          <span style="color:#6b7280;font-size:9px;">Messages</span>
+        </div>
+        <div style="padding:4px 6px;display:flex;align-items:center;gap:5px;">
+          <span style="font-size:10px;">💸</span>
+          <span style="color:#6b7280;font-size:9px;">Payments</span>
+        </div>
+        <div style="padding:4px 6px;display:flex;align-items:center;gap:5px;">
+          <span style="font-size:10px;">🔔</span>
+          <span style="color:#6b7280;font-size:9px;">Notifications</span>
+        </div>
+        <div style="padding:4px 6px;display:flex;align-items:center;gap:5px;">
+          <span style="font-size:10px;">🔍</span>
+          <span style="color:#6b7280;font-size:9px;">Discover</span>
+        </div>
+        <div style="margin-top:auto;padding:6px;background:#1f2937;border-radius:4px;">
+          <div style="color:#9ca3af;font-size:8px;">Balance</div>
+          <div style="color:#a855f7;font-size:10px;font-weight:600;">2,450 ℏ</div>
+        </div>
+      </div>
+      <!-- Main content -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;overflow:hidden;">
+        <div style="background:#18181b;border-radius:6px;padding:8px;flex:1;">
+          <div style="display:flex;gap:6px;align-items:flex-start;">
+            <div style="width:22px;height:22px;border-radius:50%;background:#4f46e5;flex-shrink:0;"></div>
+            <div>
+              <div style="color:#e5e7eb;font-size:10px;font-weight:500;">alex.hedera</div>
+              <div style="color:#6b7280;font-size:9px;margin-top:2px;">Just received 150 ℏ from team split...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Wide Sidebar with Labels</h3>
+      <p>Labeled navigation sidebar (~200-240px). Familiar SaaS pattern. Balance widget inline. Clear hierarchy. Similar to current layout but redesigned with shadcn. Used by Slack, Notion, GitHub.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="twitter-style" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f12;padding:12px;border-radius:8px;min-height:180px;display:flex;gap:8px;overflow:hidden;">
+      <!-- Left nav (Twitter-style) -->
+      <div style="width:40px;background:#18181b;border-radius:6px;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:10px;flex-shrink:0;">
+        <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);"></div>
+        <div style="width:22px;height:22px;border-radius:50%;background:#7c3aed22;display:flex;align-items:center;justify-content:center;font-size:11px;">🏠</div>
+        <div style="font-size:11px;">💬</div>
+        <div style="font-size:11px;">💸</div>
+        <div style="font-size:11px;">🔔</div>
+        <div style="margin-top:auto;width:22px;height:22px;border-radius:50%;background:#374151;"></div>
+      </div>
+      <!-- Center feed -->
+      <div style="flex:1.5;display:flex;flex-direction:column;gap:4px;overflow:hidden;">
+        <div style="background:#18181b;border-radius:6px;padding:6px 8px;display:flex;gap:6px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#4f46e5;flex-shrink:0;"></div>
+          <div>
+            <div style="color:#e5e7eb;font-size:9px;font-weight:500;">alex.hedera <span style="color:#6b7280;">· 2h</span></div>
+            <div style="color:#9ca3af;font-size:8px;margin-top:1px;">Just received 150 ℏ from team split 🎉</div>
+            <div style="display:flex;gap:6px;margin-top:3px;">
+              <span style="color:#7c3aed;font-size:8px;">♥ 24</span>
+              <span style="color:#6b7280;font-size:8px;">💬 5</span>
+            </div>
+          </div>
+        </div>
+        <div style="background:#18181b;border-radius:6px;padding:6px 8px;display:flex;gap:6px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#10b981;flex-shrink:0;"></div>
+          <div>
+            <div style="color:#e5e7eb;font-size:9px;font-weight:500;">sarah.eth <span style="color:#6b7280;">· 4h</span></div>
+            <div style="color:#9ca3af;font-size:8px;margin-top:1px;">New conversation started with the dev team</div>
+          </div>
+        </div>
+      </div>
+      <!-- Right panel -->
+      <div style="width:70px;display:flex;flex-direction:column;gap:4px;overflow:hidden;">
+        <div style="background:#18181b;border-radius:6px;padding:6px;">
+          <div style="color:#9ca3af;font-size:8px;margin-bottom:3px;">Balance</div>
+          <div style="color:#a855f7;font-size:10px;font-weight:600;">2,450 ℏ</div>
+          <div style="background:#7c3aed;border-radius:3px;padding:2px 4px;color:white;font-size:8px;margin-top:3px;text-align:center;">Send</div>
+        </div>
+        <div style="background:#18181b;border-radius:6px;padding:6px;">
+          <div style="color:#9ca3af;font-size:8px;margin-bottom:4px;">Who to follow</div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:#f59e0b;"></div>
+            <span style="color:#e5e7eb;font-size:8px;">dev_sam</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Three-Column (Twitter/X-style)</h3>
+      <p>Left nav icons, center content feed, right panel (balance widget, suggestions). More content density. Better for feed-heavy usage. Used by Twitter/X, Threads.</p>
+    </div>
+  </div>
+
+</div>

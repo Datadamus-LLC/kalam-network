@@ -1,0 +1,218 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --border: rgba(255,255,255,0.1); --fg: #e7e9ea; --fg-muted: #71767b; }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; }
+
+  .card { border: 2px solid transparent; border-radius: 14px; overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+  .card:hover { border-color: rgba(255,255,255,0.25); }
+  .card.selected { border-color: white; }
+
+  .preview {
+    background: #000;
+    padding: 20px 18px 22px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  /* Logo area */
+  .logo-row { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: white; /* white logo */
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-name { font-size: 16px; font-weight: 800; color: white; }
+
+  /* Post button — the hero of this comparison */
+  .post-btn {
+    width: 100%; padding: 13px;
+    border-radius: 999px; text-align: center;
+    font-size: 15px; font-weight: 600;
+    color: #000; cursor: pointer;
+  }
+
+  /* Balance card */
+  .bal-card {
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px;
+  }
+  .bal-label { font-size: 11px; color: var(--fg-muted); margin-bottom: 4px; }
+  .bal-amount { font-size: 22px; font-weight: 800; color: white; margin-bottom: 10px; }
+  .bal-btns { display: flex; gap: 8px; }
+  .send-btn {
+    flex: 1; padding: 9px; border-radius: 999px;
+    text-align: center; font-size: 13px; font-weight: 600; color: #000;
+  }
+  .req-btn {
+    flex: 1; padding: 9px; border-radius: 999px;
+    text-align: center; font-size: 13px;
+    border: 1px solid var(--border); color: var(--fg);
+  }
+
+  /* Mini post for context */
+  .mini-post {
+    display: flex; gap: 10px;
+    padding: 12px 0; border-top: 1px solid var(--border);
+  }
+  .p-av { width: 36px; height: 36px; border-radius: 50%; background: #1e1e1e; flex-shrink: 0; }
+  .p-content { flex: 1; }
+  .p-name { font-size: 13px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .p-text { font-size: 13px; color: var(--fg); line-height: 1.45; margin-bottom: 8px; }
+  .p-actions { display: flex; gap: 16px; }
+  .p-act { font-size: 12px; color: var(--fg-muted); display: flex; align-items: center; gap: 4px; }
+  .p-act.liked { color: #e0245e; }
+
+  /* Label */
+  .card-label { padding: 12px 14px; background: #0d0d0d; border-top: 1px solid var(--border); }
+  .card-label h3 { font-size: 13px; font-weight: 700; color: white; margin-bottom: 3px; }
+  .card-label p { font-size: 11px; color: var(--fg-muted); }
+
+  /* Swatch strip at top */
+  .swatch-strip {
+    height: 6px; border-radius: 999px;
+    margin: 0 18px 0;
+  }
+</style>
+
+<h2>Lemon — how far do you want to go?</h2>
+<p class="subtitle">Starting from your lemon gold, pushing progressively more yellow. Post + Send only. Click the one that feels right.</p>
+
+<div class="grid">
+
+  <!-- 1: Starting point #f0d060 -->
+  <div class="card" data-choice="lemon-base" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="logo-row">
+        <div class="logo-mark"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h8M3 9h12M3 13.5h9.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+        <span class="logo-name"></span>
+      </div>
+      <div class="post-btn" style="background:#f0d060">Post</div>
+      <div class="bal-card">
+        <div class="bal-label">Balance</div>
+        <div class="bal-amount">2,450 HBAR</div>
+        <div class="bal-btns">
+          <div class="send-btn" style="background:#f0d060">Send</div>
+          <div class="req-btn">Request</div>
+        </div>
+      </div>
+      <div class="mini-post">
+        <div class="p-av"></div>
+        <div class="p-content">
+          <div class="p-name">alex · 2h</div>
+          <div class="p-text">Received 150 HBAR from the team split payment.</div>
+          <div class="p-actions">
+            <span class="p-act liked"><svg width="13" height="13" fill="#e0245e" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 48</span>
+            <span class="p-act"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 12</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-label">
+      <h3>Starting point</h3>
+      <p>#f0d060 — warm lemon, from last round</p>
+    </div>
+  </div>
+
+  <!-- 2: Brighter lemon #f5e030 -->
+  <div class="card" data-choice="lemon-bright" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="logo-row">
+        <div class="logo-mark"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h8M3 9h12M3 13.5h9.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+        <span class="logo-name"></span>
+      </div>
+      <div class="post-btn" style="background:#f5e030">Post</div>
+      <div class="bal-card">
+        <div class="bal-label">Balance</div>
+        <div class="bal-amount">2,450 HBAR</div>
+        <div class="bal-btns">
+          <div class="send-btn" style="background:#f5e030">Send</div>
+          <div class="req-btn">Request</div>
+        </div>
+      </div>
+      <div class="mini-post">
+        <div class="p-av"></div>
+        <div class="p-content">
+          <div class="p-name">alex · 2h</div>
+          <div class="p-text">Received 150 HBAR from the team split payment.</div>
+          <div class="p-actions">
+            <span class="p-act liked"><svg width="13" height="13" fill="#e0245e" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 48</span>
+            <span class="p-act"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 12</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-label">
+      <h3>Bright lemon</h3>
+      <p>#f5e030 — more saturated, punchy</p>
+    </div>
+  </div>
+
+  <!-- 3: Pure lemon #ffe135 -->
+  <div class="card" data-choice="lemon-pure" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="logo-row">
+        <div class="logo-mark"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h8M3 9h12M3 13.5h9.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+        <span class="logo-name"></span>
+      </div>
+      <div class="post-btn" style="background:#ffe135">Post</div>
+      <div class="bal-card">
+        <div class="bal-label">Balance</div>
+        <div class="bal-amount">2,450 HBAR</div>
+        <div class="bal-btns">
+          <div class="send-btn" style="background:#ffe135">Send</div>
+          <div class="req-btn">Request</div>
+        </div>
+      </div>
+      <div class="mini-post">
+        <div class="p-av"></div>
+        <div class="p-content">
+          <div class="p-name">alex · 2h</div>
+          <div class="p-text">Received 150 HBAR from the team split payment.</div>
+          <div class="p-actions">
+            <span class="p-act liked"><svg width="13" height="13" fill="#e0245e" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 48</span>
+            <span class="p-act"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 12</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-label">
+      <h3>Pure lemon</h3>
+      <p>#ffe135 — electric, very yellow</p>
+    </div>
+  </div>
+
+  <!-- 4: Neon lemon #f9f01a -->
+  <div class="card" data-choice="lemon-neon" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="logo-row">
+        <div class="logo-mark"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h8M3 9h12M3 13.5h9.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+        <span class="logo-name"></span>
+      </div>
+      <div class="post-btn" style="background:#f9f01a">Post</div>
+      <div class="bal-card">
+        <div class="bal-label">Balance</div>
+        <div class="bal-amount">2,450 HBAR</div>
+        <div class="bal-btns">
+          <div class="send-btn" style="background:#f9f01a">Send</div>
+          <div class="req-btn">Request</div>
+        </div>
+      </div>
+      <div class="mini-post">
+        <div class="p-av"></div>
+        <div class="p-content">
+          <div class="p-name">alex · 2h</div>
+          <div class="p-text">Received 150 HBAR from the team split payment.</div>
+          <div class="p-actions">
+            <span class="p-act liked"><svg width="13" height="13" fill="#e0245e" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 48</span>
+            <span class="p-act"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 12</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-label">
+      <h3>Neon lemon</h3>
+      <p>#f9f01a — as far as you can go before it looks like a warning sign</p>
+    </div>
+  </div>
+
+</div>

@@ -1,3 +1,5 @@
+import type { BadgeTier } from './organization.types';
+
 // =============================================================================
 // MESSAGE TYPES
 // =============================================================================
@@ -149,6 +151,8 @@ export interface ConversationParticipant {
   avatarUrl: string | null;
   role: GroupMemberRole;
   isOnline: boolean;
+  /** Verified business badge tier — null for individual accounts */
+  badgeTier: BadgeTier | null;
 }
 
 export interface MessagePreview {

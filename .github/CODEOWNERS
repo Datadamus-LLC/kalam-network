@@ -1,0 +1,41 @@
+# Hedera Social Platform — Code Ownership
+#
+# Each line is a file pattern followed by one or more owners.
+# The last matching pattern takes the most precedence.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners (default for all files)
+* @hedera-social/core-team
+
+# Backend API
+packages/api/ @hedera-social/backend-team @hedera-social/core-team
+packages/api/src/modules/auth/ @hedera-social/backend-team @hedera-social/security-lead
+packages/api/src/modules/hedera/ @hedera-social/backend-team @hedera-social/hedera-lead
+packages/api/src/modules/payments/ @hedera-social/backend-team @hedera-social/payments-lead
+packages/api/src/modules/messaging/ @hedera-social/backend-team
+packages/api/src/modules/social/ @hedera-social/backend-team
+
+# Frontend
+apps/web/ @hedera-social/frontend-team @hedera-social/core-team
+apps/web/src/app/ @hedera-social/frontend-team
+apps/web/src/components/ @hedera-social/frontend-team
+
+# Shared packages
+packages/shared/ @hedera-social/core-team @hedera-social/backend-team @hedera-social/frontend-team
+packages/shared/src/types/ @hedera-social/core-team
+
+# Crypto and security
+packages/crypto/ @hedera-social/security-lead @hedera-social/backend-team
+
+# Configuration and CI/CD
+.github/ @hedera-social/devops @hedera-social/core-team
+docker-compose*.yml @hedera-social/devops @hedera-social/core-team
+Dockerfile @hedera-social/devops @hedera-social/backend-team
+pnpm-workspace.yaml @hedera-social/core-team
+tsconfig*.json @hedera-social/core-team
+package.json @hedera-social/core-team
+
+# Documentation
+docs/ @hedera-social/core-team
+tasks/ @hedera-social/core-team
+*.md @hedera-social/core-team

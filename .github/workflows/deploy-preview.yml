@@ -1,0 +1,110 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-preview:
+    name: Build Preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build frontend for preview
+        env:
+          NEXT_PUBLIC_ENVIRONMENT: preview
+        run: pnpm --filter @hedera-social/web build
+
+      - name: Create build metadata
+        id: metadata
+        env:
+          GIT_SHA: ${{ github.sha }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+          echo "GIT_SHA=$GIT_SHA" >> "$GITHUB_OUTPUT"
+          echo "PR_NUMBER=$PR_NUM" >> "$GITHUB_OUTPUT"
+
+      - name: Upload preview build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-build-pr-${{ github.event.pull_request.number }}
+          path: apps/web/.next
+          retention-days: 3
+
+      # Placeholder: integrate with your preview hosting provider
+      # Examples:
+      #   - Vercel: vercel deploy --token $VERCEL_TOKEN
+      #   - AWS S3: aws s3 sync apps/web/.next s3://preview-bucket/pr-$PR_NUM/
+      #   - Cloudflare Pages: wrangler pages deploy apps/web/.next
+      - name: Preview deployment placeholder
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BUILD_DATE: ${{ steps.metadata.outputs.BUILD_DATE }}
+          GIT_SHA_SHORT: ${{ github.sha }}
+        run: |
+          echo "Preview build ready for PR #$PR_NUMBER"
+          echo "Build date: $BUILD_DATE"
+          echo "Git SHA: $GIT_SHA_SHORT"
+          echo "To enable preview deployments, configure your hosting provider in this step."
+
+      - name: Comment PR with build status
+        if: success()
+        uses: actions/github-script@v7
+        env:
+          BUILD_DATE: ${{ steps.metadata.outputs.BUILD_DATE }}
+          GIT_SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const body = [
+              '**Preview Build Ready**',
+              '',
+              `Build completed for PR #${process.env.PR_NUMBER}`,
+              '',
+              '| Detail | Value |',
+              '|--------|-------|',
+              `| Git SHA | \`${process.env.GIT_SHA}\` |`,
+              `| Build date | ${process.env.BUILD_DATE} |`,
+              '',
+              '_Preview deployment is not yet configured. Build artifact is available as a workflow artifact._'
+            ].join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Comment PR on failure
+        if: failure()
+        uses: actions/github-script@v7
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Preview build failed. Check [workflow logs](${process.env.RUN_URL}) for details.`
+            });

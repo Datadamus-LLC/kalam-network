@@ -1,3 +1,5 @@
+import type { VerifiedBadgeInfo } from './organization.types';
+
 // =============================================================================
 // USER TYPES
 // =============================================================================
@@ -142,6 +144,10 @@ export interface DIDNftMetadata {
 /**
  * Public profile response (what other users see).
  * Returned by: GET /api/v1/profile/:accountId
+ *
+ * For business accounts, `badgeInfo` contains the verified badge
+ * details derived from server-side KYB status. It is null for
+ * individual accounts or businesses without KYB approval.
  */
 export interface PublicProfile {
   hederaAccountId: string;
@@ -153,6 +159,8 @@ export interface PublicProfile {
   kycLevel: KycLevel | null;
   publicFeedTopic: string | null;
   broadcastTopic: string | null;  // null for individual accounts
+  /** Verified business badge info — null for individual accounts */
+  badgeInfo: VerifiedBadgeInfo | null;
   stats: {
     followers: number;
     following: number;

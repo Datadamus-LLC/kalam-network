@@ -4,18 +4,14 @@ import { Providers } from './providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Hedera Social Platform',
+  title: 'Kalam',
   description: 'Blockchain-native social platform built on Hedera',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="dark">
+      <body className="bg-background text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

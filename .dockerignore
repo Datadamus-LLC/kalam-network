@@ -1,0 +1,47 @@
+# Dependencies (re-installed in Docker)
+node_modules
+**/node_modules
+
+# Build outputs
+**/dist
+**/.next
+
+# Environment files (secrets must be injected at runtime)
+.env
+.env.*
+!.env.example
+
+# Version control
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in image)
+docs
+tasks
+*.md
+LICENSE
+
+# Claude / AI state
+.claude
+
+# Testing artifacts
+coverage
+**/__tests__
+**/*.test.ts
+**/*.spec.ts
+**/*.integration.test.ts
+
+# Docker (prevent recursive copy)
+docker-compose*.yml
+Dockerfile
+Makefile

@@ -1,34 +1,48 @@
-# Test infrastructure — used by /dev-test and /dev-validate-all
-# Start with: docker compose -f docker-compose.test.yml up -d
-# Stop with: docker compose -f docker-compose.test.yml down
-
-version: '3.8'
+# Test infrastructure for integration tests.
+# Start: docker compose -f docker-compose.test.yml up -d
+# Stop:  docker compose -f docker-compose.test.yml down -v
+#
+# Uses different ports (5433, 6380) and container names from dev
+# so test and dev infrastructure can run simultaneously.
+#
+# Data is stored in tmpfs (RAM) for speed and automatic cleanup.
 
 services:
   test-db:
     image: postgres:16-alpine
     container_name: hedera-social-test-db
-    ports:
-      - "5433:5432"
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
       POSTGRES_DB: hedera_social_test
+    ports:
+      - '5433:5432'
     tmpfs:
-      - /var/lib/postgresql/data  # RAM disk — fast, disposable
+      - /var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test -d hedera_social_test"]
+      test: ['CMD-SHELL', 'pg_isready -U test -d hedera_social_test']
       interval: 2s
       timeout: 5s
       retries: 10
+    networks:
+      - test-network
 
   test-redis:
     image: redis:7-alpine
     container_name: hedera-social-test-redis
+    command: ['redis-server', '--appendonly', 'no']
     ports:
-      - "6380:6379"
+      - '6380:6379'
+    tmpfs:
+      - /data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 2s
       timeout: 5s
       retries: 10
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

@@ -3,33 +3,35 @@
 # Stop:  docker compose down
 # Reset: docker compose down -v  (WARNING: deletes all data)
 
-version: '3.8'
-
 services:
   # PostgreSQL — main database (index/cache of on-chain data)
   postgres:
     image: postgres:16-alpine
     container_name: hedera-social-postgres
     environment:
-      POSTGRES_USER: hedera_social
-      POSTGRES_PASSWORD: devpassword
-      POSTGRES_DB: hedera_social
+      POSTGRES_USER: ${DB_USERNAME:-hedera_social}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword}
+      POSTGRES_DB: ${DB_DATABASE:-hedera_social}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hedera_social"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-hedera_social}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - hedera-network
+    restart: unless-stopped
 
   # Redis — session cache, OTP storage, pub/sub for WebSocket
   redis:
     image: redis:7-alpine
     container_name: hedera-social-redis
+    command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6382}:6379"
     volumes:
       - redisdata:/data
     healthcheck:
@@ -37,6 +39,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - hedera-network
+    restart: unless-stopped
+
+networks:
+  hedera-network:
+    driver: bridge
 
 volumes:
   pgdata:

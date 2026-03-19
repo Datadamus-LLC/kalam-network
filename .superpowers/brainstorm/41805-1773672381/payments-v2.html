@@ -1,0 +1,401 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --border: rgba(255,255,255,0.08);
+    --fg: #e7e9ea;
+    --fg-muted: #71767b;
+    --lemon: #f0d060;
+    --green: #00ba7c;
+    --green-dim: rgba(0,186,124,0.1);
+    --red: #e0245e;
+    --red-dim: rgba(224,36,94,0.1);
+    --lemon-dim: rgba(240,208,96,0.1);
+  }
+
+  body { background: #111; padding: 16px 0; }
+  h2 { color: var(--fg); margin-bottom: 4px; }
+  .sec { font-size: 11px; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; margin-top: 24px; }
+
+  .page-sim { background: #000; border-radius: 12px; border: 1px solid var(--border); padding: 24px 0; display: flex; justify-content: center; position: relative; }
+
+  .shell { display: flex; width: 1060px; height: 560px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #000; position: relative; }
+
+  /* ── SIDEBAR (same as always) ── */
+  .sidebar { width: 220px; background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 10px 0 8px; flex-shrink: 0; }
+  .sb-logo { padding: 10px 18px 16px; }
+  .sb-mark { width: 32px; height: 32px; border-radius: 8px; background: white; display: flex; align-items: center; justify-content: center; }
+  .nav { display: flex; align-items: center; gap: 16px; padding: 11px 18px; margin: 1px 8px; border-radius: 999px; cursor: pointer; }
+  .nav:hover { background: rgba(255,255,255,0.05); }
+  .nav.active .nl { font-weight: 800; color: #fff; }
+  .nav.active .ni { color: #fff; }
+  .ni { color: var(--fg-muted); flex-shrink: 0; position: relative; }
+  .nl { font-size: 16px; color: var(--fg-muted); }
+  .ndot { position: absolute; top: -2px; right: -2px; width: 7px; height: 7px; background: var(--lemon); border-radius: 50%; border: 1.5px solid #000; }
+  .sb-gap { flex: 1; }
+  .post-wrap { padding: 10px 14px 6px; }
+  /* Primary pill button — THE button style */
+  .btn-pill-lemon { width: 100%; padding: 12px; background: var(--lemon); color: #000; font-size: 16px; font-weight: 600; border-radius: 999px; text-align: center; cursor: pointer; }
+  .sb-user { display: flex; align-items: center; gap: 10px; padding: 8px 14px; margin: 2px 8px; border-radius: 999px; cursor: pointer; }
+  .sb-user:hover { background: rgba(255,255,255,0.05); }
+  .sb-av { width: 36px; height: 36px; border-radius: 50%; background: #2a2a2a; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--fg-muted); }
+  .sb-un { font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-uh { font-size: 12px; color: var(--fg-muted); }
+
+  /* ── PAYMENTS MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
+  .page-head { padding: 13px 18px; font-size: 17px; font-weight: 800; color: #fff; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+
+  /* Balance section — fits in one clean row */
+  .balance-section { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .bal-info { }
+  .bal-label { font-size: 12px; color: var(--fg-muted); font-weight: 500; margin-bottom: 2px; }
+  .bal-amount { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; line-height: 1.1; }
+  .bal-usd { font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
+  /* Action buttons row — all same height, pill, consistent */
+  .action-row { display: flex; gap: 8px; flex-shrink: 0; }
+  /* Shared btn base */
+  .act-btn { display: flex; align-items: center; gap: 7px; padding: 0 20px; height: 40px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .act-btn-lemon { background: var(--lemon); color: #000; }
+  .act-btn-outline { border: 1px solid var(--border); color: var(--fg); }
+  .act-btn-outline:hover { border-color: rgba(255,255,255,0.25); }
+  .act-btn-ghost { color: var(--fg-muted); }
+  .act-btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--fg); }
+
+  /* Filters — same pattern as feed tabs */
+  .filter-row { padding: 0 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .filter-tabs { display: flex; }
+  .ftab { padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--fg-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; white-space: nowrap; }
+  .ftab.active { color: #fff; border-bottom-color: var(--lemon); }
+  .filter-right { flex: 1; display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+  /* Input — same style as search/chat inputs */
+  .filter-input { flex: 1; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; }
+  .filter-input input { background: none; border: none; outline: none; font-size: 13px; color: var(--fg); width: 100%; }
+  .filter-input input::placeholder { color: var(--fg-muted); }
+  /* Select — same style */
+  .filter-sel { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-size: 13px; color: var(--fg-muted); cursor: pointer; white-space: nowrap; }
+  .filter-sel:hover { border-color: rgba(255,255,255,0.2); }
+
+  /* Transaction rows — consistent */
+  .tx-list { flex: 1; overflow-y: auto; }
+  .tx-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .tx-row:hover { background: rgba(255,255,255,0.02); }
+  /* Direction icon container — same size, same shape always */
+  .tx-icon { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); }
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-name { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+  .tx-meta { font-size: 12px; color: var(--fg-muted); }
+  .tx-right { text-align: right; flex-shrink: 0; }
+  /* Amount: white for sent, green for received — ALWAYS consistent */
+  .tx-amt { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .tx-amt.sent { color: var(--fg); }
+  .tx-amt.recv { color: var(--green); }
+  /* Badge — consistent pill shape */
+  .badge { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .badge-ok { background: var(--green-dim); color: var(--green); }
+  .badge-wait { background: var(--lemon-dim); color: var(--lemon); }
+  .badge-fail { background: var(--red-dim); color: var(--red); }
+
+  /* ── RIGHT PANEL ── */
+  .rp { width: 280px; flex-shrink: 0; padding: 14px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .rp-box { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .rp-title { padding: 12px 14px 0; font-size: 15px; font-weight: 800; color: #fff; }
+  .pi { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--border); cursor: pointer; }
+  .pi:hover { background: rgba(255,255,255,0.03); }
+  .pi-av { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; }
+  .pi-info { flex: 1; min-width: 0; }
+  .pi-name { font-size: 13px; font-weight: 600; color: #fff; }
+  .pi-sub { font-size: 11px; color: var(--fg-muted); }
+  .pi-amt { font-size: 13px; font-weight: 700; color: var(--fg); flex-shrink: 0; }
+  .ri { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--border); cursor: pointer; }
+  .ri:hover { background: rgba(255,255,255,0.03); }
+  .ri-av { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; }
+  .ri-info { flex: 1; min-width: 0; }
+  .ri-name { font-size: 13px; font-weight: 600; color: #fff; }
+  .ri-handle { font-size: 11px; color: var(--fg-muted); }
+  /* Send button in right panel — outline pill, same family */
+  .ri-btn { padding: 5px 14px; border-radius: 999px; border: 1px solid var(--border); color: var(--fg-muted); font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+  .ri-btn:hover { border-color: var(--lemon); color: var(--lemon); }
+
+  /* ════════════════════════════════
+     DIALOG — pure black, pill buttons
+     matches app style exactly
+     ════════════════════════════════ */
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 10; }
+
+  .dialog {
+    width: 400px;
+    background: #000;           /* pure black — no elevation */
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+  }
+
+  .dlg-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; }
+  .dlg-title { font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 2px; }
+  .dlg-sub { font-size: 12px; color: var(--fg-muted); }
+  .dlg-close { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--fg-muted); cursor: pointer; flex-shrink: 0; }
+  .dlg-close:hover { background: rgba(255,255,255,0.06); color: var(--fg); }
+
+  .dlg-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* Field label — same as our established style */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field-lbl { font-size: 13px; font-weight: 600; color: var(--fg); }
+  /* Input — exactly the same dark subtle input used everywhere in the app */
+  .field-inp {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px; color: var(--fg);
+    outline: none; width: 100%;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .field-inp:focus, .field-inp.has-value { border-color: rgba(255,255,255,0.2); }
+  .field-inp::placeholder { color: var(--fg-muted); }
+  .field-hint { font-size: 11px; color: var(--fg-muted); }
+
+  /* Recipient selected state */
+  .recipient-selected {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .rs-av { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+  .rs-info { flex: 1; }
+  .rs-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .rs-id { font-size: 11px; color: var(--fg-muted); }
+  .rs-check { color: var(--lemon); }
+  .rs-clear { color: var(--fg-muted); cursor: pointer; }
+  .rs-clear:hover { color: var(--fg); }
+
+  /* Amount field — large amount, currency suffix */
+  .amount-field {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .amount-input { background: none; border: none; outline: none; font-size: 24px; font-weight: 800; color: #fff; width: 100%; font-family: inherit; min-width: 0; }
+  .amount-currency { font-size: 14px; font-weight: 600; color: var(--fg-muted); flex-shrink: 0; }
+
+  .dlg-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+  /* Cancel — ghost/outline pill, same family */
+  .btn-cancel { padding: 0 20px; height: 40px; border-radius: 999px; border: 1px solid var(--border); color: var(--fg-muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; }
+  .btn-cancel:hover { border-color: rgba(255,255,255,0.25); color: var(--fg); }
+  /* Confirm — lemon pill, same as Post/Send buttons everywhere */
+  .btn-send { padding: 0 24px; height: 40px; border-radius: 999px; background: var(--lemon); color: #000; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .btn-send:hover { opacity: 0.92; }
+</style>
+
+<h2>Payments — fixed</h2>
+<p class="subtitle">Consistent components throughout. Same input style, same button family, same border language as feed + messages. Dialog is pure black, pill buttons.</p>
+
+<!-- ── PAYMENTS PAGE ── -->
+<div class="sec">Payments page</div>
+<div class="page-sim">
+  <div class="shell">
+
+    <div class="sidebar">
+      <div class="sb-logo"><div class="sb-mark"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h8M3 9h12M3 13.5h9.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg></div></div>
+      <div class="nav"><span class="ni"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span><span class="nl">Home</span></div>
+      <div class="nav"><span class="ni"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span><span class="nl">Discover</span></div>
+      <div class="nav"><span class="ni" style="position:relative"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="ndot"></span></span><span class="nl">Notifications</span></div>
+      <div class="nav"><span class="ni"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nl">Messages</span></div>
+      <div class="nav active"><span class="ni"><svg width="20" height="20" fill="white" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20" stroke="black" stroke-width="1.5"/></svg></span><span class="nl">Payments</span></div>
+      <div class="nav"><span class="ni"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="nl">Profile</span></div>
+      <div class="sb-gap"></div>
+      <div class="post-wrap"><div class="btn-pill-lemon">Post</div></div>
+      <div class="sb-user"><div class="sb-av">K</div><div><div class="sb-un">hedera-social.user</div><div class="sb-uh">@alex</div></div><span style="color:var(--fg-muted);font-size:16px">···</span></div>
+    </div>
+
+    <div class="main">
+      <div class="page-head">Payments</div>
+
+      <!-- Balance — clean single row, nothing overflows -->
+      <div class="balance-section">
+        <div class="bal-info">
+          <div class="bal-label">Available balance</div>
+          <div class="bal-amount">2,450 HBAR</div>
+          <div class="bal-usd">≈ $612.50 USD · just now</div>
+        </div>
+        <div class="action-row">
+          <!-- All buttons: same height (40px), same border-radius (999px), same font-size (14px) -->
+          <div class="act-btn act-btn-lemon">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            Send
+          </div>
+          <div class="act-btn act-btn-outline">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            Request
+          </div>
+          <div class="act-btn act-btn-ghost">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            Split
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter tabs — same as feed tabs, same lemon underline -->
+      <div class="filter-row">
+        <div class="filter-tabs">
+          <div class="ftab active">All</div>
+          <div class="ftab">Sent</div>
+          <div class="ftab">Received</div>
+        </div>
+        <div class="filter-right">
+          <!-- Same input style as everywhere else -->
+          <div class="filter-input">
+            <svg width="13" height="13" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input placeholder="Search transactions..." />
+          </div>
+          <div class="filter-sel">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Any date
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transactions — consistent colors: sent=white, received=green. Always. -->
+      <div class="tx-list">
+        <div class="tx-row">
+          <div class="tx-icon"><svg width="16" height="16" fill="none" stroke="var(--fg-muted)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Alex Ibrahim</div><div class="tx-meta">Split · Conference venue Q1 · 2h ago</div></div>
+          <div class="tx-right"><div class="tx-amt sent">−150 HBAR</div><span class="badge badge-ok">Confirmed</span></div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-icon"><svg width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
+          <div class="tx-info"><div class="tx-name">devDAO Labs</div><div class="tx-meta">Received · Q1 contractor fee · 4h ago</div></div>
+          <div class="tx-right"><div class="tx-amt recv">+1,200 HBAR</div><span class="badge badge-ok">Confirmed</span></div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-icon"><svg width="16" height="16" fill="none" stroke="var(--fg-muted)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Nadia Chen</div><div class="tx-meta">Sent · Coffee catch-up · 1d ago</div></div>
+          <div class="tx-right"><div class="tx-amt sent">−20 HBAR</div><span class="badge badge-wait">Pending</span></div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-icon"><svg width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Yusuf Okafor</div><div class="tx-meta">Received · Freelance invoice #12 · 2d ago</div></div>
+          <div class="tx-right"><div class="tx-amt recv">+500 HBAR</div><span class="badge badge-ok">Confirmed</span></div>
+        </div>
+        <div class="tx-row">
+          <div class="tx-icon"><svg width="16" height="16" fill="none" stroke="var(--fg-muted)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
+          <div class="tx-info"><div class="tx-name">Marco Rossi</div><div class="tx-meta">Sent · Design retainer Feb · 3d ago</div></div>
+          <div class="tx-right"><div class="tx-amt sent">−300 HBAR</div><span class="badge badge-fail">Failed</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="rp">
+      <div class="rp-box">
+        <div class="rp-title">Pending requests</div>
+        <div class="pi"><div class="pi-av" style="background:#0a1a2a"></div><div class="pi-info"><div class="pi-name">devDAO Labs</div><div class="pi-sub">Expires in 3 days</div></div><div class="pi-amt">80 HBAR</div></div>
+        <div class="pi"><div class="pi-av" style="background:#1a0a2a"></div><div class="pi-info"><div class="pi-name">Nadia Chen</div><div class="pi-sub">Expires in 6 days</div></div><div class="pi-amt">35 HBAR</div></div>
+      </div>
+      <div class="rp-box">
+        <div class="rp-title">Send again</div>
+        <div class="ri"><div class="ri-av" style="background:#2d1a08"></div><div class="ri-info"><div class="ri-name">Alex Ibrahim</div><div class="ri-handle">@alex</div></div><div class="ri-btn">Send</div></div>
+        <div class="ri"><div class="ri-av" style="background:#0d1f12"></div><div class="ri-info"><div class="ri-name">Sarah A.</div><div class="ri-handle">@sarah</div></div><div class="ri-btn">Send</div></div>
+        <div class="ri"><div class="ri-av" style="background:#0a1a2a"></div><div class="ri-info"><div class="ri-name">devDAO Labs</div><div class="ri-handle">@dao</div></div><div class="ri-btn">Send</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── SEND DIALOG ── -->
+<div class="sec">Send HBAR dialog — pure black, pill buttons, consistent inputs</div>
+<div class="page-sim">
+  <div class="shell">
+
+    <!-- Same sidebar, blurred behind dialog -->
+    <div class="sidebar" style="opacity:0.4">
+      <div class="sb-logo"><div class="sb-mark"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h8M3 9h12M3 13.5h9.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></svg></div></div>
+      <div class="nav"><span class="nl" style="margin-left:36px">Home</span></div>
+      <div class="nav"><span class="nl" style="margin-left:36px">Discover</span></div>
+      <div class="nav"><span class="nl" style="margin-left:36px">Notifications</span></div>
+      <div class="nav"><span class="nl" style="margin-left:36px">Messages</span></div>
+      <div class="nav active"><span class="nl" style="margin-left:36px">Payments</span></div>
+      <div class="nav"><span class="nl" style="margin-left:36px">Profile</span></div>
+      <div class="sb-gap"></div>
+      <div class="post-wrap"><div class="btn-pill-lemon">Post</div></div>
+    </div>
+    <div class="main" style="opacity:0.4">
+      <div class="page-head">Payments</div>
+      <div class="balance-section">
+        <div class="bal-info"><div class="bal-label">Available balance</div><div class="bal-amount">2,450 HBAR</div><div class="bal-usd">≈ $612.50 USD</div></div>
+        <div class="action-row"><div class="act-btn act-btn-lemon">Send</div><div class="act-btn act-btn-outline">Request</div><div class="act-btn act-btn-ghost">Split</div></div>
+      </div>
+      <div class="filter-row"><div class="filter-tabs"><div class="ftab active">All</div><div class="ftab">Sent</div><div class="ftab">Received</div></div></div>
+      <div class="tx-list">
+        <div class="tx-row"><div class="tx-icon"><svg width="16" height="16" fill="none" stroke="var(--fg-muted)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div><div class="tx-info"><div class="tx-name">Alex Ibrahim</div><div class="tx-meta">Split · Conference venue Q1</div></div><div class="tx-right"><div class="tx-amt sent">−150 HBAR</div><span class="badge badge-ok">Confirmed</span></div></div>
+        <div class="tx-row"><div class="tx-icon"><svg width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div><div class="tx-info"><div class="tx-name">devDAO Labs</div><div class="tx-meta">Received · Q1 contractor fee</div></div><div class="tx-right"><div class="tx-amt recv">+1,200 HBAR</div><span class="badge badge-ok">Confirmed</span></div></div>
+      </div>
+    </div>
+    <div class="rp" style="opacity:0.4">
+      <div class="rp-box"><div class="rp-title">Pending requests</div><div class="pi"><div class="pi-av" style="background:#0a1a2a"></div><div class="pi-info"><div class="pi-name">devDAO Labs</div><div class="pi-sub">Expires in 3 days</div></div><div class="pi-amt">80 HBAR</div></div></div>
+    </div>
+
+    <!-- DIALOG -->
+    <div class="overlay">
+      <div class="dialog">
+        <div class="dlg-head">
+          <div>
+            <div class="dlg-title">Send HBAR</div>
+            <div class="dlg-sub">Signed via Tamam MPC custody</div>
+          </div>
+          <div class="dlg-close"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+        </div>
+
+        <div class="dlg-body">
+
+          <!-- Recipient — selected state -->
+          <div class="field">
+            <div class="field-lbl">Recipient</div>
+            <div class="recipient-selected">
+              <div class="rs-av" style="background:#2d1a08"></div>
+              <div class="rs-info">
+                <div class="rs-name">Alex Ibrahim</div>
+                <div class="rs-id">0.0.4821930 · KYC verified</div>
+              </div>
+              <svg class="rs-check" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg class="rs-clear" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+          </div>
+
+          <!-- Amount — large, prominent -->
+          <div class="field">
+            <div class="field-lbl">Amount</div>
+            <div class="amount-field">
+              <input class="amount-input" value="150" />
+              <span class="amount-currency">HBAR</span>
+            </div>
+            <span class="field-hint">≈ $37.50 USD &nbsp;·&nbsp; Balance: 2,450 HBAR</span>
+          </div>
+
+          <!-- Note — same input style -->
+          <div class="field">
+            <div class="field-lbl">Note <span style="color:var(--fg-muted);font-weight:400">optional</span></div>
+            <input class="field-inp has-value" value="Conference venue split" />
+          </div>
+
+        </div>
+
+        <!-- Footer — pill buttons, same family as everywhere -->
+        <div class="dlg-foot">
+          <div class="btn-cancel">Cancel</div>
+          <div class="btn-send">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send 150 HBAR
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

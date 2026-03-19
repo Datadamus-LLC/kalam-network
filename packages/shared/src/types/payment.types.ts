@@ -8,7 +8,7 @@
 // =============================================================================
 
 export type PaymentStatus = 'confirmed' | 'failed';
-export type PaymentRequestStatus = 'pending' | 'paid' | 'declined';
+export type PaymentRequestStatus = 'pending' | 'paid' | 'expired' | 'declined';
 export type PaymentType = 'send' | 'request_fulfillment' | 'split_payment';
 export type SplitMethod = 'equal' | 'custom';
 
@@ -150,4 +150,82 @@ export interface PaySplitResponse {
   htsTransactionId: string;
   hcsSequenceNumber: number;
   remainingUnpaid: number;
+}
+
+// --- Enhanced Payment Request Types (T31) ---
+
+/**
+ * DM-PAY-004: Payment Request Status Update
+ *
+ * Submitted to the conversation HCS topic when a payment request
+ * status changes (paid, declined, expired).
+ */
+export interface PaymentRequestUpdatePayload {
+  v: '1.0';
+  type: 'payment_request_update';
+  requestId: string;
+  status: PaymentRequestStatus;
+  paidTxId?: string | null;
+  paidAt?: string | null;
+  declineReason?: string | null;
+  updatedBy: string; // Account ID of the user who updated the status
+}
+
+/**
+ * Full payment request record as returned by the enhanced payments API.
+ * Named EnhancedPaymentRequest to avoid collision with the simpler
+ * PaymentRequest interface in organization.types.ts.
+ */
+export interface EnhancedPaymentRequest {
+  id: string;
+  requesterUserId: string;
+  organizationId: string | null;
+  conversationId: string | null;
+  hcsTopicId: string;
+  hcsSequenceNumber: number | null;
+  amount: number;
+  currency: string;
+  description: string | null;
+  status: PaymentRequestStatus;
+  paidTxId: string | null;
+  paidAt: string | null;
+  expiresAt: string;
+  createdAt: string;
+}
+
+/**
+ * Payload for creating a payment request via the API.
+ */
+export interface CreatePaymentRequestPayload {
+  topicId: string;
+  amount: number;
+  currency: string;
+  description?: string;
+  expiresAt?: string; // Optional ISO 8601 expiry override
+}
+
+/**
+ * Payload for declining a payment request via the API.
+ */
+export interface DeclinePaymentRequestPayload {
+  reason?: string;
+}
+
+/**
+ * Query parameters for listing payment requests.
+ */
+export interface PaymentRequestQueryParams {
+  conversationId?: string;
+  status?: PaymentRequestStatus;
+  limit?: number;
+  cursor?: string;
+}
+
+/**
+ * Response for a paginated list of payment requests.
+ */
+export interface PaginatedPaymentRequestsResponse {
+  requests: PaymentRequest[];
+  cursor: string | null;
+  hasMore: boolean;
 }

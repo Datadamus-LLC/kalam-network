@@ -1,0 +1,514 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --black: #000;
+    --border: rgba(255,255,255,0.12);
+    --fg: #e7e9ea;
+    --fg-muted: #71767b;
+    --amber: #f5a623;
+    --amber-dim: rgba(245,166,35,0.15);
+  }
+
+  h2 { margin-bottom: 4px; }
+  .options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 16px; }
+
+  .opt { border: 2px solid transparent; border-radius: 12px; overflow: hidden; cursor: pointer; }
+  .opt:hover { border-color: rgba(245,166,35,0.3); }
+  .opt.selected { border-color: var(--amber); }
+
+  .demo { display: flex; height: 460px; background: #000; }
+
+  /* Sidebar — same structure in all 3 */
+  .sb {
+    width: 200px;
+    background: #000;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+    flex-shrink: 0;
+  }
+  .sb-logo { padding: 8px 14px 12px; }
+  .logo-mark {
+    width: 30px; height: 30px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 14px; margin: 1px 6px;
+    border-radius: 999px; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); }
+  .nav-item .ni-text { font-size: 14px; color: var(--fg); }
+  .nav-item.active .ni-text { font-weight: 700; }
+  .ni-icon { flex-shrink: 0; position: relative; }
+  .notif-dot {
+    position: absolute; top: -2px; right: -2px;
+    width: 7px; height: 7px;
+    border-radius: 50%; border: 1.5px solid #000;
+  }
+  .sb-spacer { flex: 1; }
+  .post-btn-wrap { padding: 12px 10px 4px; }
+  .sb-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; margin: 0 6px 4px;
+    border-radius: 999px; cursor: pointer;
+  }
+  .sb-user:hover { background: rgba(255,255,255,0.06); }
+  .u-av { width: 34px; height: 34px; border-radius: 50%; background: #2a2a2a; flex-shrink: 0; }
+  .u-info { flex: 1; }
+  .u-name { font-size: 12px; font-weight: 700; color: var(--fg); }
+  .u-handle { font-size: 11px; color: var(--fg-muted); }
+  .u-dots { color: var(--fg-muted); font-size: 14px; }
+
+  /* Post button styles vary per option */
+  .post-btn {
+    width: 100%; border-radius: 999px;
+    padding: 10px; text-align: center;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Feed */
+  .feed {
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden; border-right: 1px solid var(--border);
+    min-width: 0;
+  }
+  .feed-header {
+    padding: 12px 16px; font-size: 17px; font-weight: 800;
+    color: var(--fg); border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+  }
+  .compose {
+    display: flex; gap: 10px; padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .c-av { width: 36px; height: 36px; border-radius: 50%; background: #2a2a2a; flex-shrink: 0; }
+  .c-right { flex: 1; }
+  .c-placeholder { font-size: 17px; color: var(--fg-muted); padding: 5px 0 10px; }
+  .c-divider { height: 1px; background: var(--border); margin-bottom: 8px; }
+  .c-actions { display: flex; align-items: center; justify-content: space-between; }
+  .c-icons { display: flex; gap: 14px; }
+  .c-btn {
+    padding: 6px 16px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  .post-row {
+    display: flex; gap: 10px; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+  }
+  .post-row:hover { background: rgba(255,255,255,0.018); }
+  .p-av { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; }
+  .p-body { flex: 1; min-width: 0; }
+  .p-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; flex-wrap: wrap; }
+  .p-name { font-size: 14px; font-weight: 700; color: var(--fg); }
+  .p-time { font-size: 13px; color: var(--fg-muted); }
+  .p-text { font-size: 14px; color: var(--fg); line-height: 1.5; margin-bottom: 10px; }
+  .p-actions { display: flex; gap: 20px; }
+  .p-action { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--fg-muted); }
+
+  /* Badge styles vary per option */
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+
+  /* Right panel */
+  .rp { width: 260px; padding: 12px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
+  .rp-search {
+    background: rgba(255,255,255,0.06); border-radius: 999px;
+    padding: 9px 14px; display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--fg-muted);
+  }
+  .rp-box { border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+  .rp-title { padding: 12px 14px 6px; font-size: 18px; font-weight: 800; color: var(--fg); }
+  .bal-wrap { padding: 2px 14px 14px; }
+  .bal-num { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 3px; }
+  .bal-sub { font-size: 12px; color: var(--fg-muted); margin-bottom: 12px; }
+  .bal-btns { display: flex; gap: 8px; }
+  .bal-btn { flex: 1; padding: 7px; border-radius: 999px; text-align: center; font-size: 13px; font-weight: 600; }
+  .fol-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer;
+  }
+  .fol-row:hover { background: rgba(255,255,255,0.04); }
+  .fol-av { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; }
+  .fol-info { flex: 1; }
+  .fol-name { font-size: 14px; font-weight: 700; color: var(--fg); }
+  .fol-handle { font-size: 12px; color: var(--fg-muted); }
+  .fol-btn { padding: 5px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+
+  .opt-label { padding: 10px 14px; background: #0c0c0c; border-top: 1px solid var(--border); }
+  .opt-label h3 { font-size: 13px; font-weight: 700; color: var(--fg); margin-bottom: 3px; }
+  .opt-label p { font-size: 11px; color: var(--fg-muted); line-height: 1.4; }
+
+  /* SVG icon helpers */
+  svg { display: block; }
+</style>
+
+<h2>Color balance — three approaches</h2>
+<p class="subtitle">Same A layout. Only the color logic changes: how much amber, where it lives, what gets white vs amber treatment.</p>
+
+<div class="options">
+
+  <!-- OPTION 1: Amber very restrained — X.com-like discipline -->
+  <div class="opt" data-choice="restrained" onclick="toggleSelect(this)">
+    <div class="demo">
+      <div class="sb">
+        <div class="sb-logo">
+          <div class="logo-mark" style="background:#f5a623">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h8M3 9h12M3 13h10" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+        <!-- amber ONLY on logo. All nav is white/gray -->
+        <div class="nav-item active">
+          <span class="ni-icon"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+          <span class="ni-text">Home</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Discover</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon" style="position:relative">
+            <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot" style="background:#f5a623"></span>
+          </span>
+          <span class="ni-text" style="color:#71767b">Notifications</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Messages</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Payments</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Profile</span>
+        </div>
+        <div class="sb-spacer"></div>
+        <div class="post-btn-wrap">
+          <!-- Amber button, normal weight -->
+          <div class="post-btn" style="background:#f5a623; color:#000">Post</div>
+        </div>
+        <div class="sb-user">
+          <div class="u-av"></div>
+          <div class="u-info"><div class="u-name">hedera-social.user</div><div class="u-handle">@alex</div></div>
+          <span class="u-dots">···</span>
+        </div>
+      </div>
+      <div class="feed">
+        <div class="feed-header">Home</div>
+        <div class="compose">
+          <div class="c-av"></div>
+          <div class="c-right">
+            <div class="c-placeholder">What's happening?</div>
+            <div class="c-divider"></div>
+            <div class="c-actions">
+              <div class="c-icons">
+                <!-- Remixicon-style: image, attachment, location -->
+                <svg width="18" height="18" fill="none" stroke="#f5a623" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <svg width="18" height="18" fill="none" stroke="#f5a623" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </div>
+              <div class="c-btn" style="background:#f5a623; color:#000">Post</div>
+            </div>
+          </div>
+        </div>
+        <div class="post-row">
+          <div class="p-av" style="background:#2a2a2a"></div>
+          <div class="p-body">
+            <div class="p-top">
+              <span class="p-name">alex</span>
+              <!-- Badge: subtle outline, not amber fill -->
+              <span class="badge" style="border:1px solid #71767b; color:#71767b">KYC</span>
+              <span class="p-time">· 2h</span>
+            </div>
+            <div class="p-text">Received 150 HBAR from the team split payment. Tamam custody signs in seconds.</div>
+            <div class="p-actions">
+              <!-- Like active: amber. Rest: gray -->
+              <span class="p-action" style="color:#f5a623"><svg width="15" height="15" fill="#f5a623" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 24</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 5</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+            </div>
+          </div>
+        </div>
+        <div class="post-row">
+          <div class="p-av" style="background:#1a1a1a"></div>
+          <div class="p-body">
+            <div class="p-top"><span class="p-name">sarah</span><span class="p-time">· 4h</span></div>
+            <div class="p-text">DID NFT minted on Hedera. Identity is immutable now. This is the standard.</div>
+            <div class="p-actions">
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 12</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rp">
+        <div class="rp-search"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search </div>
+        <div class="rp-box">
+          <div class="rp-title">Balance</div>
+          <div class="bal-wrap">
+            <!-- Balance: amber for the number only -->
+            <div class="bal-num" style="color:#f5a623">2,450 HBAR</div>
+            <div class="bal-sub">≈ $612.50 USD</div>
+            <div class="bal-btns">
+              <div class="bal-btn" style="background:#f5a623; color:#000">Send</div>
+              <div class="bal-btn" style="border:1px solid var(--border); color:var(--fg)">Request</div>
+            </div>
+          </div>
+        </div>
+        <div class="rp-box">
+          <div class="rp-title" style="font-size:15px">Who to follow</div>
+          <div class="fol-row"><div class="fol-av" style="background:#2a2a2a"></div><div class="fol-info"><div class="fol-name">dev_sam</div><div class="fol-handle">@dev_sam</div></div><div class="fol-btn" style="background:white; color:#000">Follow</div></div>
+          <div class="fol-row"><div class="fol-av" style="background:#1a1a1a"></div><div class="fol-info"><div class="fol-name">maria.h</div><div class="fol-handle">@maria</div></div><div class="fol-btn" style="background:white; color:#000">Follow</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="opt-label" onclick="toggleSelect(this.parentElement)">
+      <h3>1 — Amber restrained</h3>
+      <p>Amber on: logo, Post CTA, liked heart, balance number. KYC badge is outline/gray. Follow button is white. Everything else white or gray.</p>
+    </div>
+  </div>
+
+  <!-- OPTION 2: Warm neutral — amber tinted but muted -->
+  <div class="opt" data-choice="warm-neutral" onclick="toggleSelect(this)">
+    <div class="demo">
+      <div class="sb">
+        <div class="sb-logo">
+          <div class="logo-mark" style="background:#f5a623">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h8M3 9h12M3 13h10" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+        <div class="nav-item active">
+          <span class="ni-icon"><svg width="18" height="18" fill="#f5a623" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+          <span class="ni-text" style="color:#f5a623">Home</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Discover</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon" style="position:relative">
+            <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot" style="background:#f5a623"></span>
+          </span>
+          <span class="ni-text" style="color:#71767b">Notifications</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Messages</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Payments</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Profile</span>
+        </div>
+        <div class="sb-spacer"></div>
+        <div class="post-btn-wrap">
+          <!-- Outlined amber -->
+          <div class="post-btn" style="border:1.5px solid #f5a623; color:#f5a623; background:transparent">Post</div>
+        </div>
+        <div class="sb-user">
+          <div class="u-av"></div>
+          <div class="u-info"><div class="u-name">hedera-social.user</div><div class="u-handle">@alex</div></div>
+          <span class="u-dots">···</span>
+        </div>
+      </div>
+      <div class="feed">
+        <div class="feed-header">Home</div>
+        <div class="compose">
+          <div class="c-av"></div>
+          <div class="c-right">
+            <div class="c-placeholder">What's happening?</div>
+            <div class="c-divider"></div>
+            <div class="c-actions">
+              <div class="c-icons">
+                <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </div>
+              <!-- Solid amber CTA -->
+              <div class="c-btn" style="background:#f5a623; color:#000">Post</div>
+            </div>
+          </div>
+        </div>
+        <div class="post-row">
+          <div class="p-av" style="background:#2a2a2a"></div>
+          <div class="p-body">
+            <div class="p-top">
+              <span class="p-name">alex</span>
+              <!-- badge: amber bg, muted -->
+              <span class="badge" style="background:rgba(245,166,35,0.15); color:#f5a623">KYC</span>
+              <span class="p-time">· 2h</span>
+            </div>
+            <div class="p-text">Received 150 HBAR from the team split payment. Tamam custody signs in seconds.</div>
+            <div class="p-actions">
+              <span class="p-action" style="color:#f5a623"><svg width="15" height="15" fill="#f5a623" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 24</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 5</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+            </div>
+          </div>
+        </div>
+        <div class="post-row">
+          <div class="p-av" style="background:#1a1a1a"></div>
+          <div class="p-body">
+            <div class="p-top"><span class="p-name">sarah</span><span class="p-time">· 4h</span></div>
+            <div class="p-text">DID NFT minted on Hedera. Identity is immutable now.</div>
+            <div class="p-actions">
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 12</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rp">
+        <div class="rp-search"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search </div>
+        <div class="rp-box">
+          <div class="rp-title">Balance</div>
+          <div class="bal-wrap">
+            <div class="bal-num" style="color:var(--fg)">2,450 HBAR</div>
+            <div class="bal-sub">≈ $612.50 USD</div>
+            <div class="bal-btns">
+              <div class="bal-btn" style="background:#f5a623; color:#000">Send</div>
+              <div class="bal-btn" style="border:1px solid var(--border); color:var(--fg)">Request</div>
+            </div>
+          </div>
+        </div>
+        <div class="rp-box">
+          <div class="rp-title" style="font-size:15px">Who to follow</div>
+          <div class="fol-row"><div class="fol-av" style="background:#2a2a2a"></div><div class="fol-info"><div class="fol-name">dev_sam</div><div class="fol-handle">@dev_sam</div></div><div class="fol-btn" style="background:white; color:#000">Follow</div></div>
+          <div class="fol-row"><div class="fol-av" style="background:#1a1a1a"></div><div class="fol-info"><div class="fol-name">maria.h</div><div class="fol-handle">@maria</div></div><div class="fol-btn" style="background:white; color:#000">Follow</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="opt-label" onclick="toggleSelect(this.parentElement)">
+      <h3>2 — Amber as active state</h3>
+      <p>Amber on: logo, active nav (icon + text), notification dot, liked heart, Post CTA inline. Post button in sidebar is outlined. KYC badge is amber-tinted. Balance number is white.</p>
+    </div>
+  </div>
+
+  <!-- OPTION 3: Almost monochrome — amber only on logo + single CTA -->
+  <div class="opt" data-choice="monochrome" onclick="toggleSelect(this)">
+    <div class="demo">
+      <div class="sb">
+        <div class="sb-logo">
+          <div class="logo-mark" style="background:#f5a623">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h8M3 9h12M3 13h10" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+        <div class="nav-item active">
+          <span class="ni-icon"><svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+          <span class="ni-text">Home</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Discover</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon" style="position:relative">
+            <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot" style="background:#f5a623"></span>
+          </span>
+          <span class="ni-text" style="color:#71767b">Notifications</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Messages</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Payments</span>
+        </div>
+        <div class="nav-item">
+          <span class="ni-icon"><svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <span class="ni-text" style="color:#71767b">Profile</span>
+        </div>
+        <div class="sb-spacer"></div>
+        <div class="post-btn-wrap">
+          <!-- Pure white button — amber only on logo -->
+          <div class="post-btn" style="background:white; color:#000">Post</div>
+        </div>
+        <div class="sb-user">
+          <div class="u-av"></div>
+          <div class="u-info"><div class="u-name">hedera-social.user</div><div class="u-handle">@alex</div></div>
+          <span class="u-dots">···</span>
+        </div>
+      </div>
+      <div class="feed">
+        <div class="feed-header">Home</div>
+        <div class="compose">
+          <div class="c-av"></div>
+          <div class="c-right">
+            <div class="c-placeholder">What's happening?</div>
+            <div class="c-divider"></div>
+            <div class="c-actions">
+              <div class="c-icons">
+                <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </div>
+              <div class="c-btn" style="background:white; color:#000">Post</div>
+            </div>
+          </div>
+        </div>
+        <div class="post-row">
+          <div class="p-av" style="background:#2a2a2a"></div>
+          <div class="p-body">
+            <div class="p-top">
+              <span class="p-name">alex</span>
+              <!-- KYC badge: white outline -->
+              <span class="badge" style="border:1px solid #e7e9ea; color:#e7e9ea">KYC</span>
+              <span class="p-time">· 2h</span>
+            </div>
+            <div class="p-text">Received 150 HBAR from the team split payment. Tamam custody signs in seconds.</div>
+            <div class="p-actions">
+              <!-- Like active: amber accent even in monochrome -->
+              <span class="p-action" style="color:#f5a623"><svg width="15" height="15" fill="#f5a623" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 24</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 5</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span>
+            </div>
+          </div>
+        </div>
+        <div class="post-row">
+          <div class="p-av" style="background:#1a1a1a"></div>
+          <div class="p-body">
+            <div class="p-top"><span class="p-name">sarah</span><span class="p-time">· 4h</span></div>
+            <div class="p-text">DID NFT minted on Hedera. Identity is immutable now.</div>
+            <div class="p-actions">
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 12</span>
+              <span class="p-action"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rp">
+        <div class="rp-search"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search </div>
+        <div class="rp-box">
+          <div class="rp-title">Balance</div>
+          <div class="bal-wrap">
+            <div class="bal-num" style="color:var(--fg)">2,450 HBAR</div>
+            <div class="bal-sub">≈ $612.50 USD</div>
+            <div class="bal-btns">
+              <div class="bal-btn" style="background:white; color:#000">Send</div>
+              <div class="bal-btn" style="border:1px solid var(--border); color:var(--fg)">Request</div>
+            </div>
+          </div>
+        </div>
+        <div class="rp-box">
+          <div class="rp-title" style="font-size:15px">Who to follow</div>
+          <div class="fol-row"><div class="fol-av" style="background:#2a2a2a"></div><div class="fol-info"><div class="fol-name">dev_sam</div><div class="fol-handle">@dev_sam</div></div><div class="fol-btn" style="background:white; color:#000">Follow</div></div>
+          <div class="fol-row"><div class="fol-av" style="background:#1a1a1a"></div><div class="fol-info"><div class="fol-name">maria.h</div><div class="fol-handle">@maria</div></div><div class="fol-btn" style="background:white; color:#000">Follow</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="opt-label" onclick="toggleSelect(this.parentElement)">
+      <h3>3 — Near monochrome, amber on logo only</h3>
+      <p>Amber on: logo mark + notification dot + liked state only. Post button is white. Follow/Send are white. Almost X.com-identical, amber barely visible except on the logo.</p>
+    </div>
+  </div>
+
+</div>

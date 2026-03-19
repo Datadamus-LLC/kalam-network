@@ -1,0 +1,514 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --border: rgba(255,255,255,0.1);
+    --fg: #e7e9ea;
+    --fg-muted: #71767b;
+    --amber: #f5a623;
+    --red: #e0245e;
+    --green: #00ba7c;
+  }
+
+  body { background: #111; }
+
+  h2 { margin-bottom: 4px; }
+
+  /* === SHELL === */
+  .shell {
+    display: flex;
+    max-width: 1060px;
+    margin: 0 auto;
+    height: 580px;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  /* === SIDEBAR === */
+  .sb {
+    width: 210px;
+    background: #000;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0 6px;
+    flex-shrink: 0;
+  }
+  .sb-logo { padding: 10px 16px 16px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--amber);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 16px;
+    padding: 11px 16px; margin: 1px 8px;
+    border-radius: 999px; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); }
+  .nav-item.active .ni-text { font-weight: 800; color: #fff; }
+  .nav-item.active .ni-icon svg { stroke: #fff; }
+  .nav-item.active .ni-icon svg[fill="currentColor"] { fill: #fff; }
+  .ni-icon { flex-shrink: 0; position: relative; color: var(--fg-muted); }
+  .ni-text { font-size: 16px; color: var(--fg-muted); }
+  .nav-item.active .ni-text { color: #fff; }
+  .notif-dot {
+    position: absolute; top: -2px; right: -2px;
+    width: 8px; height: 8px;
+    background: var(--amber); border-radius: 50%;
+    border: 2px solid #000;
+  }
+  .sb-gap { flex: 1; }
+  .post-wrap { padding: 10px 12px 6px; }
+  .post-cta {
+    width: 100%; padding: 12px;
+    background: var(--amber); color: #000;
+    font-size: 16px; font-weight: 600;
+    border-radius: 999px; text-align: center; cursor: pointer;
+    transition: opacity 0.1s;
+  }
+  .post-cta:hover { opacity: 0.9; }
+  .sb-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px; margin: 2px 8px;
+    border-radius: 999px; cursor: pointer;
+  }
+  .sb-user:hover { background: rgba(255,255,255,0.05); }
+  .u-av {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #2a2a2a; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--fg-muted);
+  }
+  .u-info { flex: 1; min-width: 0; }
+  .u-name { font-size: 13px; font-weight: 700; color: #fff; }
+  .u-handle { font-size: 12px; color: var(--fg-muted); }
+  .u-more { color: var(--fg-muted); font-size: 16px; letter-spacing: 1px; }
+
+  /* === FEED === */
+  .feed {
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden; border-right: 1px solid var(--border);
+    min-width: 0;
+  }
+  .feed-head {
+    padding: 14px 18px; font-size: 18px; font-weight: 800;
+    color: #fff; border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .feed-tabs {
+    display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .tab {
+    flex: 1; padding: 13px 0; text-align: center;
+    font-size: 14px; font-weight: 600; color: var(--fg-muted); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color 0.1s;
+  }
+  .tab.active { color: #fff; border-bottom-color: var(--amber); }
+  .tab:hover:not(.active) { background: rgba(255,255,255,0.03); }
+
+  /* Compose box */
+  .compose {
+    display: flex; gap: 12px; padding: 14px 18px;
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .c-av {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #2a2a2a; flex-shrink: 0;
+  }
+  .c-right { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .c-text {
+    font-size: 18px; color: var(--fg-muted); padding: 4px 0;
+    border: none; outline: none; background: transparent; width: 100%;
+  }
+  .c-bottom { display: flex; align-items: center; justify-content: space-between; }
+  .c-icons { display: flex; gap: 14px; align-items: center; }
+  .c-icon { color: var(--amber); cursor: pointer; }
+  .c-divider { height: 1px; background: var(--border); }
+  .c-btn {
+    background: var(--amber); color: #000;
+    font-size: 14px; font-weight: 600;
+    padding: 8px 20px; border-radius: 999px; cursor: pointer;
+  }
+
+  /* Posts */
+  .posts { overflow-y: auto; flex: 1; }
+  .post {
+    display: flex; gap: 12px; padding: 14px 18px;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: background 0.1s;
+  }
+  .post:hover { background: rgba(255,255,255,0.015); }
+  .p-av {
+    width: 40px; height: 40px; border-radius: 50%;
+    flex-shrink: 0; background: #1e1e1e;
+  }
+  .p-body { flex: 1; min-width: 0; }
+  .p-top {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 4px; flex-wrap: wrap;
+  }
+  .p-name { font-size: 15px; font-weight: 700; color: #fff; }
+  .p-handle { font-size: 14px; color: var(--fg-muted); }
+  .p-dot { color: var(--fg-muted); font-size: 14px; }
+  .p-time { font-size: 14px; color: var(--fg-muted); }
+
+  /* Badges */
+  .badge-kyc {
+    background: rgba(245,166,35,0.12);
+    color: rgba(245,166,35,0.9);
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 5px;
+    letter-spacing: 0.03em;
+  }
+  .badge-org {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.6);
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 5px;
+    letter-spacing: 0.03em;
+  }
+
+  .p-text {
+    font-size: 15px; color: var(--fg); line-height: 1.55;
+    margin-bottom: 12px; white-space: pre-wrap;
+  }
+
+  /* Payment card embedded in post */
+  .payment-card {
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.025);
+  }
+  .pay-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(245,166,35,0.12);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .pay-info { flex: 1; }
+  .pay-label { font-size: 12px; color: var(--fg-muted); }
+  .pay-amount { font-size: 17px; font-weight: 700; color: var(--amber); }
+  .pay-status {
+    font-size: 11px; font-weight: 700; color: var(--green);
+    background: rgba(0,186,124,0.1);
+    padding: 3px 9px; border-radius: 999px;
+  }
+
+  /* Post actions */
+  .p-actions { display: flex; gap: 0; margin: 0 -6px; }
+  .p-action {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 13px; color: var(--fg-muted); cursor: pointer;
+    transition: all 0.1s; flex: 1; max-width: 80px;
+  }
+  .p-action:hover { background: rgba(255,255,255,0.06); }
+  .p-action.liked { color: var(--red); }
+  .p-action.liked:hover { background: rgba(224,36,94,0.1); }
+  .p-action.replied:hover { background: rgba(29,155,240,0.1); color: #1d9bf0; }
+  .p-action.shared:hover { background: rgba(0,186,124,0.1); color: var(--green); }
+
+  /* === RIGHT PANEL === */
+  .rp {
+    width: 290px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    padding: 14px; gap: 14px; overflow: hidden;
+  }
+  .rp-search {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px; padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; color: var(--fg-muted); cursor: pointer;
+  }
+  .rp-search:hover { border-color: var(--amber); }
+  .rp-card {
+    border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+  .rp-title {
+    padding: 14px 16px 6px; font-size: 18px;
+    font-weight: 800; color: #fff;
+  }
+
+  .bal-num { font-size: 28px; font-weight: 800; color: var(--amber); letter-spacing: -0.5px; }
+  .bal-sub { font-size: 12px; color: var(--fg-muted); margin: 3px 0 14px; }
+  .bal-btns { display: flex; gap: 8px; }
+  .b-btn {
+    flex: 1; padding: 9px; border-radius: 999px;
+    text-align: center; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .b-btn-solid { background: var(--amber); color: #000; }
+  .b-btn-outline { border: 1px solid var(--border); color: var(--fg); }
+
+  .fol-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; cursor: pointer;
+  }
+  .fol-item:hover { background: rgba(255,255,255,0.03); }
+  .fol-item:last-child { border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+  .fi-av { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; }
+  .fi-info { flex: 1; min-width: 0; }
+  .fi-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .fi-handle { font-size: 13px; color: var(--fg-muted); }
+  .fi-btn {
+    background: #fff; color: #000;
+    font-size: 13px; font-weight: 700;
+    padding: 5px 16px; border-radius: 999px; flex-shrink: 0;
+  }
+</style>
+
+<h2>Hedera Social — refined</h2>
+<p class="subtitle">Mix of 1+2: white sidebar nav, amber CTA + logo, red likes, green payments/confirmed states, amber for balance + KYC. Click around on action buttons to feel the interaction states.</p>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-logo">
+      <div class="logo-mark">
+        <!--  logo placeholder — replace with actual SVG -->
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 4.5h8M3 9h12M3 13.5h9.5" stroke="#000" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="nav-item active">
+      <span class="ni-icon"><svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+      <span class="ni-text">Home</span>
+    </div>
+    <div class="nav-item">
+      <span class="ni-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+      <span class="ni-text">Discover</span>
+    </div>
+    <div class="nav-item">
+      <span class="ni-icon" style="position:relative">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot"></span>
+      </span>
+      <span class="ni-text">Notifications</span>
+    </div>
+    <div class="nav-item">
+      <span class="ni-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span class="ni-text">Messages</span>
+    </div>
+    <div class="nav-item">
+      <span class="ni-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
+      <span class="ni-text">Payments</span>
+    </div>
+    <div class="nav-item">
+      <span class="ni-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5zM14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5zM4 15a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4zM14 15a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4z"/></svg></span>
+      <span class="ni-text">Broadcasts</span>
+    </div>
+    <div class="nav-item">
+      <span class="ni-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      <span class="ni-text">Profile</span>
+    </div>
+
+    <div class="sb-gap"></div>
+
+    <div class="post-wrap">
+      <div class="post-cta">Post</div>
+    </div>
+
+    <div class="sb-user">
+      <div class="u-av">K</div>
+      <div class="u-info">
+        <div class="u-name">hedera-social.user</div>
+        <div class="u-handle">@alex</div>
+      </div>
+      <span class="u-more">···</span>
+    </div>
+  </div>
+
+  <!-- FEED -->
+  <div class="feed">
+    <div class="feed-head">
+      Home
+      <svg width="18" height="18" fill="none" stroke="#71767b" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>
+
+    <div class="feed-tabs">
+      <div class="tab active">For you</div>
+      <div class="tab">Following</div>
+      <div class="tab">Trending</div>
+    </div>
+
+    <!-- Compose -->
+    <div class="compose">
+      <div class="c-av"></div>
+      <div class="c-right">
+        <div class="c-text">What's happening on Hedera?</div>
+        <div class="c-divider"></div>
+        <div class="c-bottom">
+          <div class="c-icons">
+            <!-- Image icon -->
+            <span class="c-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span>
+            <!-- Attach icon -->
+            <span class="c-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></span>
+            <!-- Location icon -->
+            <span class="c-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          </div>
+          <div class="c-btn">Post</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts -->
+    <div class="posts">
+
+      <!-- Post 1: regular post with liked state -->
+      <div class="post">
+        <div class="p-av" style="background:#2d2010"></div>
+        <div class="p-body">
+          <div class="p-top">
+            <span class="p-name">Alex Ibrahim</span>
+            <span class="badge-kyc">KYC</span>
+            <span class="p-dot">·</span>
+            <span class="p-time">2h</span>
+          </div>
+          <div class="p-text">Received a split payment from the team for the conference venue. 150 HBAR processed in seconds through Tamam — this is what financial infrastructure should feel like.</div>
+          <!-- Embedded payment receipt card -->
+          <div class="payment-card">
+            <div class="pay-icon">
+              <svg width="18" height="18" fill="none" stroke="#f5a623" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            </div>
+            <div class="pay-info">
+              <div class="pay-label">Split payment received</div>
+              <div class="pay-amount">+150 HBAR</div>
+            </div>
+            <div class="pay-status">Confirmed</div>
+          </div>
+          <div class="p-actions">
+            <div class="p-action liked">
+              <svg width="16" height="16" fill="#e0245e" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span>48</span>
+            </div>
+            <div class="p-action replied">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>12</span>
+            </div>
+            <div class="p-action shared">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span>5</span>
+            </div>
+            <div class="p-action">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post 2: org broadcast -->
+      <div class="post">
+        <div class="p-av" style="background:#1a1a2e"></div>
+        <div class="p-body">
+          <div class="p-top">
+            <span class="p-name">devDAO Labs</span>
+            <span class="badge-org">ORG</span>
+            <span class="p-dot">·</span>
+            <span class="p-time">4h</span>
+          </div>
+          <div class="p-text">Q1 strategy broadcast: All members will receive their HBAR allocation by end of week. Tamam custody handles the signing. No keys to manage on your end.</div>
+          <div class="p-actions">
+            <div class="p-action">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span>22</span>
+            </div>
+            <div class="p-action replied">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>3</span>
+            </div>
+            <div class="p-action shared">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span>8</span>
+            </div>
+            <div class="p-action">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post 3: plain social -->
+      <div class="post">
+        <div class="p-av" style="background:#0d1f12"></div>
+        <div class="p-body">
+          <div class="p-top">
+            <span class="p-name">Sarah Al-Rashid</span>
+            <span class="p-dot">·</span>
+            <span class="p-time">1d</span>
+          </div>
+          <div class="p-text">KYC completed via Mirsad. DID NFT minted on Hedera. My identity is now immutable and on-chain. This is the standard every platform should aim for.</div>
+          <div class="p-actions">
+            <div class="p-action">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span>31</span>
+            </div>
+            <div class="p-action replied">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>7</span>
+            </div>
+            <div class="p-action shared">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span>2</span>
+            </div>
+            <div class="p-action">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="rp">
+    <div class="rp-search">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Search 
+    </div>
+
+    <div class="rp-card">
+      <div class="rp-title">Balance</div>
+      <div style="padding:4px 16px 14px">
+        <div class="bal-num">2,450 HBAR</div>
+        <div class="bal-sub">≈ $612.50 USD · just now</div>
+        <div class="bal-btns">
+          <div class="b-btn b-btn-solid">Send</div>
+          <div class="b-btn b-btn-outline">Request</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rp-card">
+      <div class="rp-title" style="font-size:16px;padding-bottom:8px">Who to follow</div>
+      <div class="fol-item">
+        <div class="fi-av" style="background:#2a1a0a"></div>
+        <div class="fi-info"><div class="fi-name">dev_sam</div><div class="fi-handle">@dev_sam</div></div>
+        <div class="fi-btn">Follow</div>
+      </div>
+      <div class="fol-item">
+        <div class="fi-av" style="background:#0a1a2a"></div>
+        <div class="fi-info"><div class="fi-name">maria.h</div><div class="fi-handle">@maria</div></div>
+        <div class="fi-btn">Follow</div>
+      </div>
+      <div class="fol-item">
+        <div class="fi-av" style="background:#0a2a1a"></div>
+        <div class="fi-info"><div class="fi-name">dao_labs</div><div class="fi-handle">@dao</div></div>
+        <div class="fi-btn">Follow</div>
+      </div>
+    </div>
+  </div>
+
+</div>

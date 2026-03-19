@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 
-interface Post {
+export interface FeedPost {
   id: string;
   authorAccountId: string;
+  authorDisplayName?: string | null;
+  authorAvatarUrl?: string | null;
   content: string;
   createdAt: string;
   likes?: number;
@@ -11,27 +13,41 @@ interface Post {
 }
 
 interface FeedState {
-  posts: Post[];
+  posts: FeedPost[];
   isLoading: boolean;
   hasMore: boolean;
-  cursor?: string;
+  cursor: string | null;
+  error: string | null;
+  activeTab: 'for-you' | 'following' | 'trending';
 
-  setPosts: (posts: Post[]) => void;
-  addPosts: (posts: Post[]) => void;
-  setIsLoading: (loading: boolean) => void;
+  setPosts: (posts: FeedPost[]) => void;
+  addPosts: (posts: FeedPost[]) => void;
+  setIsLoading: (isLoading: boolean) => void;
   setHasMore: (hasMore: boolean) => void;
-  setCursor: (cursor: string | undefined) => void;
+  setCursor: (cursor: string | null) => void;
+  setError: (error: string | null) => void;
+  setActiveTab: (tab: 'for-you' | 'following' | 'trending') => void;
+  reset: () => void;
 }
 
-export const useFeedStore = create<FeedState>((set) => ({
-  posts: [],
+const initialState = {
+  posts: [] as FeedPost[],
   isLoading: false,
   hasMore: true,
-  cursor: undefined,
+  cursor: null as string | null,
+  error: null as string | null,
+  activeTab: 'for-you' as const,
+};
+
+export const useFeedStore = create<FeedState>((set) => ({
+  ...initialState,
 
   setPosts: (posts) => set({ posts }),
   addPosts: (posts) => set((state) => ({ posts: [...state.posts, ...posts] })),
   setIsLoading: (isLoading) => set({ isLoading }),
   setHasMore: (hasMore) => set({ hasMore }),
   setCursor: (cursor) => set({ cursor }),
+  setError: (error) => set({ error }),
+  setActiveTab: (activeTab) => set({ activeTab }),
+  reset: () => set({ ...initialState, posts: [] }),
 }));
