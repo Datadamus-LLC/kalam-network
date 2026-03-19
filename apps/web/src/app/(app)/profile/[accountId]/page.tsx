@@ -7,9 +7,13 @@ import {
   RiArrowLeftLine,
   RiMessage3Line,
   RiBankCardLine,
+  RiPriceTag3Line,
+  RiGlobalLine,
+  RiBroadcastLine,
 } from '@remixicon/react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';
 import { ProfileBadge } from '@/components/profile/ProfileBadge';
+import { OrgBadge } from '@/components/ui/OrgBadge';
 import { PostList } from '@/components/feed/PostList';
 import { api, ApiError } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
@@ -28,6 +32,10 @@ interface ProfileData {
   accountType: string;
   kycVerified: boolean;
   kycLevel: string | null;
+  /** Business-only: industry category (not yet in backend entity — future field). */
+  category?: string | null;
+  /** Business-only: public website URL (not yet in backend entity — future field). */
+  website?: string | null;
   publicFeedTopic: string | null;
   badgeInfo: {
     tier: string;
@@ -46,15 +54,15 @@ interface ProfileData {
   didNft: { tokenId: string; serialNumber: number; metadataCid: string } | null;
 }
 
-type ProfileTab = 'posts' | 'replies' | 'payments';
-const TABS: { id: ProfileTab; label: string }[] = [
-  { id: 'posts', label: 'Posts' },
-  { id: 'replies', label: 'Replies' },
-  { id: 'payments', label: 'Payments' },
-];
+type ProfileTab = 'posts' | 'replies' | 'payments' | 'broadcasts';
 
 /**
  * Profile page for a user or business.
+ * Business accounts (`accountType === 'business'`) render a distinct org design:
+ * - OrgBadge next to name, category + website below name
+ * - Stats: Posts + Followers only (no Following)
+ * - Tabs: Posts + Broadcasts (no Replies, no Payments)
+ * - Sidebar: Organization card + broadcasts CTA (no Similar accounts)
  */
 export default function ProfilePage({ params }: ProfilePageProps) {
   const { accountId } = params;
@@ -131,6 +139,16 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   }, [accountId, isFollowing, followLoading]);
 
   const isOwnProfile = currentUser?.hederaAccountId === accountId;
+  const isOrg = profile?.accountType === 'business';
+
+  /** Tab class helper — lemon underline per spec */
+  const tabCls = (id: ProfileTab) =>
+    cn(
+      'flex-1 py-[14px] text-[14px] font-semibold transition-colors border-b-2 -mb-[1px]',
+      activeTab === id
+        ? 'border-primary text-foreground'
+        : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/[0.03]',
+    );
 
   if (loading) {
     return (
@@ -201,38 +219,70 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
+                  {/* Name row — OrgBadge for business accounts */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="text-[20px] font-extrabold text-foreground break-words">
                       {profile.displayName ?? 'Anonymous'}
                     </h1>
-                    {profile.badgeInfo && (
-                      <ProfileBadge badgeInfo={{
-                        ...profile.badgeInfo,
-                        tier: profile.badgeInfo.tier as BadgeTier,
-                      }} />
+                    {isOrg ? (
+                      <OrgBadge size="md" />
+                    ) : (
+                      profile.badgeInfo && (
+                        <ProfileBadge badgeInfo={{
+                          ...profile.badgeInfo,
+                          tier: profile.badgeInfo.tier as BadgeTier,
+                        }} />
+                      )
                     )}
                   </div>
-                  {profile.username ? (
-                    <p className="text-[13px] text-muted-foreground mt-0.5">
-                      @{profile.username}
-                    </p>
+
+                  {/* Org-specific: category + website under the name */}
+                  {isOrg ? (
+                    <div className="flex flex-wrap items-center gap-3 mt-1 text-[13px] text-muted-foreground">
+                      {profile.category && (
+                        <span className="flex items-center gap-1">
+                          <RiPriceTag3Line size={13} />
+                          {profile.category}
+                        </span>
+                      )}
+                      {profile.website && (
+                        <a
+                          href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-primary hover:opacity-80 transition-opacity"
+                        >
+                          <RiGlobalLine size={13} />
+                          {profile.website.replace(/^https?:\/\//, '')}
+                        </a>
+                      )}
+                    </div>
                   ) : (
-                    <p className="text-[13px] text-muted-foreground font-mono mt-0.5">
-                      {profile.hederaAccountId}
-                    </p>
+                    /* Individual: username or account ID */
+                    profile.username ? (
+                      <p className="text-[13px] text-muted-foreground mt-0.5">
+                        @{profile.username}
+                      </p>
+                    ) : (
+                      <p className="text-[13px] text-muted-foreground font-mono mt-0.5">
+                        {profile.hederaAccountId}
+                      </p>
+                    )
                   )}
+
+                  {/* KYC / KYB badge */}
                   {profile.kycLevel && (
                     <span className="inline-block mt-1.5 px-[8px] py-[2px] text-[11px] rounded-full bg-[rgba(0,186,124,0.1)] text-[#00ba7c] font-semibold">
-                      KYC: {profile.kycLevel}
+                      {isOrg ? `KYB: ${profile.kycLevel}` : `KYC: ${profile.kycLevel}`}
                     </span>
                   )}
                 </div>
 
                 {/* Action buttons — h-34px, rounded-full per spec */}
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {!isOwnProfile && currentUser?.hederaAccountId && (
+                  {!isOwnProfile && currentUser?.hederaAccountId && !isOrg && (
                     <>
-                      {/* Message icon button */}
+                      {/* Message icon button — not shown for orgs */}
                       <Link
                         href="/messages"
                         className="flex items-center justify-center w-[34px] h-[34px] rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors"
@@ -241,7 +291,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                         <RiMessage3Line size={16} />
                       </Link>
 
-                      {/* Send payment icon button */}
+                      {/* Send payment icon button — not shown for orgs */}
                       <Link
                         href="/payments"
                         className="flex items-center justify-center w-[34px] h-[34px] rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors"
@@ -249,22 +299,24 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                       >
                         <RiBankCardLine size={16} />
                       </Link>
-
-                      {/* Follow — white fill, black text per spec */}
-                      <button
-                        type="button"
-                        onClick={handleFollow}
-                        disabled={followLoading}
-                        className={cn(
-                          'flex items-center h-[34px] px-[16px] rounded-full text-[13px] font-semibold transition-colors disabled:opacity-50',
-                          isFollowing
-                            ? 'border border-border text-muted-foreground hover:bg-white/[0.06] bg-transparent'
-                            : 'bg-white text-black hover:opacity-90',
-                        )}
-                      >
-                        {followLoading ? '…' : isFollowing ? 'Following' : 'Follow'}
-                      </button>
                     </>
+                  )}
+
+                  {!isOwnProfile && currentUser?.hederaAccountId && (
+                    /* Follow — white fill, black text per spec */
+                    <button
+                      type="button"
+                      onClick={handleFollow}
+                      disabled={followLoading}
+                      className={cn(
+                        'flex items-center h-[34px] px-[16px] rounded-full text-[13px] font-semibold transition-colors disabled:opacity-50',
+                        isFollowing
+                          ? 'border border-border text-muted-foreground hover:bg-white/[0.06] bg-transparent'
+                          : 'bg-white text-black hover:opacity-90',
+                      )}
+                    >
+                      {followLoading ? '…' : isFollowing ? 'Following' : 'Follow'}
+                    </button>
                   )}
 
                   {isOwnProfile && (
@@ -299,39 +351,40 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             </div>
           </div>
 
-          {/* Stats row */}
+          {/* Stats row — orgs omit "Following" */}
           <div className="flex gap-6 mt-5">
-            {[
-              { value: profile.stats.posts, label: 'Posts' },
-              { value: profile.stats.followers, label: 'Followers' },
-              { value: profile.stats.following, label: 'Following' },
-            ].map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <p className="text-[18px] font-extrabold text-foreground">{value}</p>
-                <p className="text-[12px] text-muted-foreground">{label}</p>
+            <div className="text-center">
+              <p className="text-[18px] font-extrabold text-foreground">{profile.stats.posts}</p>
+              <p className="text-[12px] text-muted-foreground">Posts</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[18px] font-extrabold text-foreground">{profile.stats.followers}</p>
+              <p className="text-[12px] text-muted-foreground">Followers</p>
+            </div>
+            {!isOrg && (
+              <div className="text-center">
+                <p className="text-[18px] font-extrabold text-foreground">{profile.stats.following}</p>
+                <p className="text-[12px] text-muted-foreground">Following</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
-        {/* Content tabs — lemon underline per spec */}
-        <div className="flex border-b border-border">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex-1 py-[14px] text-[14px] font-semibold transition-colors border-b-2 -mb-[1px]',
-                activeTab === tab.id
-                  ? 'border-primary text-foreground'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/[0.03]',
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {/* Content tabs */}
+        {isOrg ? (
+          /* Org profile: Posts + Broadcasts */
+          <div className="flex border-b border-border">
+            <button type="button" onClick={() => setActiveTab('posts')} className={tabCls('posts')}>Posts</button>
+            <button type="button" onClick={() => setActiveTab('broadcasts')} className={tabCls('broadcasts')}>Broadcasts</button>
+          </div>
+        ) : (
+          /* Individual: Posts + Replies + Payments */
+          <div className="flex border-b border-border">
+            <button type="button" onClick={() => setActiveTab('posts')} className={tabCls('posts')}>Posts</button>
+            <button type="button" onClick={() => setActiveTab('replies')} className={tabCls('replies')}>Replies</button>
+            <button type="button" onClick={() => setActiveTab('payments')} className={tabCls('payments')}>Payments</button>
+          </div>
+        )}
 
         {/* Tab content */}
         {activeTab === 'posts' && (
@@ -347,64 +400,134 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             <p className="text-[14px] text-muted-foreground">Payment history coming soon.</p>
           </div>
         )}
+        {activeTab === 'broadcasts' && (
+          <div className="py-8 text-center px-4">
+            <RiBroadcastLine size={32} className="text-muted-foreground/40 mx-auto mb-3" />
+            <p className="text-[14px] font-semibold text-foreground mb-1">
+              {profile.displayName ?? 'This organization'} broadcasts to subscribers
+            </p>
+            <p className="text-[13px] text-muted-foreground mb-4">
+              Subscribe on the Broadcasts page to receive their messages.
+            </p>
+            <Link
+              href="/broadcasts"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/15 text-primary text-[13px] font-semibold hover:bg-primary/25 transition-colors"
+            >
+              <RiBroadcastLine size={14} />
+              Go to Broadcasts
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* ── Right panel ── */}
       <aside className="hidden lg:flex flex-col w-[320px] flex-shrink-0 p-4 gap-4 sticky top-0 h-screen overflow-y-auto">
-        {/* Hedera account info */}
-        <div className="border border-border rounded-[14px] p-4 space-y-3">
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-            Hedera Identity
-          </p>
-
-          <div className="space-y-2">
-            <div>
-              <p className="text-[11px] text-muted-foreground mb-1">Account ID</p>
-              <span className="text-[12px] font-mono text-foreground bg-white/[0.04] border border-border rounded-full px-3 py-1 inline-block break-all">
-                {profile.hederaAccountId}
-              </span>
-            </div>
-
-            {profile.didNft && (
-              <div>
-                <p className="text-[11px] text-muted-foreground mb-1">DID NFT</p>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="text-[11px] bg-primary/12 text-primary/80 px-[8px] py-[3px] rounded-full font-semibold">
-                    {profile.didNft.serialNumber ? `#${profile.didNft.serialNumber}` : profile.didNft.tokenId ? `Token ${profile.didNft.tokenId}` : 'DID NFT'}
-                  </span>
+        {isOrg ? (
+          /* Org sidebar: organization card + broadcasts CTA */
+          <>
+            {/* Organization info card */}
+            <div className="rounded-[12px] border border-border p-4 space-y-2">
+              <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[.05em]">Organization</p>
+              <div className="space-y-2 text-[13px]">
+                {profile.category && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <RiPriceTag3Line size={13} />
+                    <span>{profile.category}</span>
+                  </div>
+                )}
+                {profile.website && (
+                  <a
+                    href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity"
+                  >
+                    <RiGlobalLine size={13} />
+                    <span className="truncate">{profile.website.replace(/^https?:\/\//, '')}</span>
+                  </a>
+                )}
+                {profile.kycLevel && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground/60 text-[12px]">KYB Status</span>
+                    <span className="text-[11px] bg-[rgba(0,186,124,0.1)] text-[#00ba7c] px-[8px] py-[3px] rounded-full font-semibold">
+                      {profile.kycLevel}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-start gap-2">
+                  <span className="text-muted-foreground/60 text-[12px] flex-shrink-0 pt-0.5">Account ID</span>
+                  <span className="font-mono text-[12px] text-foreground break-all">{profile.hederaAccountId}</span>
                 </div>
               </div>
-            )}
-
-            {profile.kycLevel && (
-              <div>
-                <p className="text-[11px] text-muted-foreground mb-1">KYC Status</p>
-                <span className="text-[11px] bg-[rgba(0,186,124,0.1)] text-[#00ba7c] px-[8px] py-[3px] rounded-full font-semibold">
-                  {profile.kycLevel}
-                </span>
-              </div>
-            )}
-
-            <div>
-              <p className="text-[11px] text-muted-foreground mb-1">Account type</p>
-              <span className="text-[12px] text-foreground capitalize">{profile.accountType}</span>
             </div>
-          </div>
-        </div>
 
-        {/* Similar accounts */}
-        <div className="border border-border rounded-[14px] p-4">
-          <p className="text-[15px] font-bold text-foreground mb-2">Similar accounts</p>
-          <p className="text-[13px] text-muted-foreground">
-            Discover more people to follow.
-          </p>
-          <Link
-            href="/discover"
-            className="inline-flex items-center h-[34px] mt-3 px-[16px] rounded-full border border-border text-[13px] font-semibold text-foreground hover:bg-white/[0.06] transition-colors"
-          >
-            Explore
-          </Link>
-        </div>
+            {/* Broadcasts CTA */}
+            <Link
+              href="/broadcasts"
+              className="block w-full text-center py-2.5 rounded-[10px] bg-primary/10 text-primary text-[13px] font-semibold hover:bg-primary/20 transition-colors"
+            >
+              Subscribe to broadcasts
+            </Link>
+          </>
+        ) : (
+          /* Individual sidebar: Hedera Identity + Similar accounts */
+          <>
+            {/* Hedera account info */}
+            <div className="border border-border rounded-[14px] p-4 space-y-3">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                Hedera Identity
+              </p>
+
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[11px] text-muted-foreground mb-1">Account ID</p>
+                  <span className="text-[12px] font-mono text-foreground bg-white/[0.04] border border-border rounded-full px-3 py-1 inline-block break-all">
+                    {profile.hederaAccountId}
+                  </span>
+                </div>
+
+                {profile.didNft && (
+                  <div>
+                    <p className="text-[11px] text-muted-foreground mb-1">DID NFT</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <span className="text-[11px] bg-primary/12 text-primary/80 px-[8px] py-[3px] rounded-full font-semibold">
+                        {profile.didNft.serialNumber ? `#${profile.didNft.serialNumber}` : profile.didNft.tokenId ? `Token ${profile.didNft.tokenId}` : 'DID NFT'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {profile.kycLevel && (
+                  <div>
+                    <p className="text-[11px] text-muted-foreground mb-1">KYC Status</p>
+                    <span className="text-[11px] bg-[rgba(0,186,124,0.1)] text-[#00ba7c] px-[8px] py-[3px] rounded-full font-semibold">
+                      {profile.kycLevel}
+                    </span>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-[11px] text-muted-foreground mb-1">Account type</p>
+                  <span className="text-[12px] text-foreground capitalize">{profile.accountType}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Similar accounts */}
+            <div className="border border-border rounded-[14px] p-4">
+              <p className="text-[15px] font-bold text-foreground mb-2">Similar accounts</p>
+              <p className="text-[13px] text-muted-foreground">
+                Discover more people to follow.
+              </p>
+              <Link
+                href="/discover"
+                className="inline-flex items-center h-[34px] mt-3 px-[16px] rounded-full border border-border text-[13px] font-semibold text-foreground hover:bg-white/[0.06] transition-colors"
+              >
+                Explore
+              </Link>
+            </div>
+          </>
+        )}
       </aside>
     </div>
   );
