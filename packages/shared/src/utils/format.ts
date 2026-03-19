@@ -28,23 +28,23 @@ export function formatCurrency(amount: number, currency: string): string {
   return `${symbol}${amount.toFixed(2)}`;
 }
 
-/** Build HashScan URL for a transaction */
-export function hashScanTxUrl(txId: string, network: 'testnet' | 'mainnet' = 'testnet'): string {
-  return `https://hashscan.io/${network}/transaction/${txId}`;
+/** Build HashScan URL for a transaction — baseUrl should come from env/config */
+export function hashScanTxUrl(txId: string, network: 'testnet' | 'mainnet', baseUrl: string): string {
+  return `${baseUrl}/${network}/transaction/${txId}`;
 }
 
-/** Build HashScan URL for an account */
-export function hashScanAccountUrl(accountId: string, network: 'testnet' | 'mainnet' = 'testnet'): string {
-  return `https://hashscan.io/${network}/account/${accountId}`;
+/** Build HashScan URL for an account — baseUrl should come from env/config */
+export function hashScanAccountUrl(accountId: string, network: 'testnet' | 'mainnet', baseUrl: string): string {
+  return `${baseUrl}/${network}/account/${accountId}`;
 }
 
-/** Build HashScan URL for an NFT */
-export function hashScanNftUrl(tokenId: string, serial: number, network: 'testnet' | 'mainnet' = 'testnet'): string {
-  return `https://hashscan.io/${network}/token/${tokenId}/${serial}`;
+/** Build HashScan URL for an NFT — baseUrl should come from env/config */
+export function hashScanNftUrl(tokenId: string, serial: number, network: 'testnet' | 'mainnet', baseUrl: string): string {
+  return `${baseUrl}/${network}/token/${tokenId}/${serial}`;
 }
 
-/** Build IPFS gateway URL from CID */
-export function ipfsUrl(cid: string, gatewayBase = 'https://gateway.pinata.cloud/ipfs'): string {
+/** Build IPFS gateway URL from CID — gatewayBase should come from env/config */
+export function ipfsUrl(cid: string, gatewayBase: string): string {
   // Remove ipfs:// prefix if present
   const cleanCid = cid.replace(/^ipfs:\/\//, '');
   return `${gatewayBase}/${cleanCid}`;

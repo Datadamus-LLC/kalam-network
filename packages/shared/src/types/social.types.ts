@@ -1,3 +1,5 @@
+import type { BadgeTier } from './organization.types';
+
 // =============================================================================
 // SOCIAL FEED TYPES
 // =============================================================================
@@ -57,6 +59,8 @@ export interface Post {
     displayName: string | null;
     avatarUrl: string | null;
     kycVerified: boolean;
+    /** Verified business badge tier — null for individual accounts */
+    badgeTier: BadgeTier | null;
   };
   text: string;
   media: PostMedia[];
@@ -82,7 +86,10 @@ export interface UserListItem {
   accountId: string;
   displayName: string | null;
   avatarUrl: string | null;
+  accountType: 'individual' | 'business';
   kycVerified: boolean;
+  /** Verified business badge tier — null for individual accounts */
+  badgeTier: BadgeTier | null;
   isFollowing?: boolean;        // Relative to the requesting user
 }
 
