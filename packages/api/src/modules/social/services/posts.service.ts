@@ -104,10 +104,12 @@ export class PostsService {
       const redisHost =
         this.configService.get<string>("redis.host") ?? "localhost";
       const redisPort = this.configService.get<number>("redis.port") ?? 6379;
+      const redisPassword = this.configService.get<string>("redis.password");
 
       this.redis = new Redis({
         host: redisHost,
         port: redisPort,
+        ...(redisPassword ? { password: redisPassword } : {}),
         lazyConnect: true,
         maxRetriesPerRequest: 1,
         retryStrategy: (times: number) => {

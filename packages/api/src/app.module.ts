@@ -34,7 +34,10 @@ import { AppService } from "./app.service";
         password: configService.get<string>("database.password"),
         database: configService.get<string>("database.database"),
         entities: [],
-        migrations: [],
+        migrations:
+          process.env.NODE_ENV === "production"
+            ? ["dist/database/migrations/**/*.js"]
+            : ["src/database/migrations/**/*.ts"],
         synchronize: false,
         logging: configService.get<boolean>("database.logging"),
         autoLoadEntities: true,
