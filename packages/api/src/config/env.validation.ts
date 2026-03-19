@@ -74,6 +74,8 @@ export const envSchema = z.object({
 
   DB_DATABASE: z.string().min(1).default("hedera_social"),
 
+  DB_SYNCHRONIZE: z.enum(["true", "false"]).default("false"),
+
   // ============================
   // REDIS
   // ============================
