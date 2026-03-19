@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { getSocket, closeSocket } from '@/lib/socket';
 
 interface UseSocketReturn {
@@ -9,19 +9,19 @@ interface UseSocketReturn {
 }
 
 export function useSocket(): UseSocketReturn {
-  const connectedRef = useRef(false);
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    // Connect socket on mount
+    // Trigger lazy socket init and subscribe to connection state changes
     const socket = getSocket();
-    connectedRef.current = socket.connected;
+    setConnected(socket.connected);
 
     const handleConnect = () => {
-      connectedRef.current = true;
+      setConnected(true);
     };
 
     const handleDisconnect = () => {
-      connectedRef.current = false;
+      setConnected(false);
     };
 
     socket.on('connect', handleConnect);
@@ -34,7 +34,7 @@ export function useSocket(): UseSocketReturn {
   }, []);
 
   return {
-    connected: connectedRef.current,
+    connected,
     disconnect: closeSocket,
   };
 }
