@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar';
 import { api, ApiError } from '@/lib/api';
-import { RiPriceTag3Line, RiGlobalLine, RiVerifiedBadgeLine } from '@remixicon/react';
+import { RiPriceTag3Line, RiGlobalLine, RiVerifiedBadgeLine, RiBuildingLine } from '@remixicon/react';
 
 interface OrgData {
   id: string;
@@ -87,6 +87,9 @@ export default function OrganizationPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createError, setCreateError] = useState<string | null>(null);
+  const [newOrgCategory, setNewOrgCategory] = useState('');
+  const [newOrgWebsite, setNewOrgWebsite] = useState('');
+  const [newOrgBio, setNewOrgBio] = useState('');
   const [recentBroadcasts, setRecentBroadcasts] = useState<RecentBroadcast[]>([]);
   const [broadcastsLoading, setBroadcastsLoading] = useState(false);
 
@@ -133,6 +136,28 @@ export default function OrganizationPage() {
     void loadOrg();
   }, [loadOrg]);
 
+  const handleCreate = useCallback(async () => {
+    if (!createName.trim() || isCreating) return;
+    setIsCreating(true);
+    setCreateError(null);
+    try {
+      await api.createOrganization(createName.trim());
+      const hasExtras = newOrgCategory.trim() || newOrgBio.trim() || newOrgWebsite.trim();
+      if (hasExtras) {
+        await api.updateOrganization({
+          ...(newOrgCategory.trim() && { category: newOrgCategory.trim() }),
+          ...(newOrgBio.trim() && { bio: newOrgBio.trim() }),
+          ...(newOrgWebsite.trim() && { website: newOrgWebsite.trim() }),
+        });
+      }
+      await loadOrg();
+    } catch (err) {
+      setCreateError(err instanceof ApiError ? err.message : 'Failed to create organization');
+    } finally {
+      setIsCreating(false);
+    }
+  }, [createName, newOrgCategory, newOrgBio, newOrgWebsite, isCreating, loadOrg]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-full">
@@ -159,57 +184,94 @@ export default function OrganizationPage() {
     );
   }
 
-  const handleCreateOrg = async () => {
-    if (!createName.trim()) { setCreateError('Organization name is required'); return; }
-    setIsCreating(true);
-    setCreateError(null);
-    try {
-      await api.createOrganization(createName.trim());
-      await loadOrg();
-    } catch (err) {
-      setCreateError(err instanceof ApiError ? err.message : 'Failed to create organization');
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
   if (!org) {
     return (
       <div className="flex min-h-full">
-        <div className="flex-1 border-r border-border px-[18px] py-16">
-          <div className="max-w-[420px] mx-auto text-center">
-            <h1 className="text-[20px] font-extrabold text-foreground mb-2">Create Your Organization</h1>
-            <p className="text-[14px] text-muted-foreground mb-8">Set up your business presence on the platform</p>
+        <div className="flex-1 border-r border-border">
+          {/* No-org state — Create Organization */}
+          <div className="max-w-[500px] mx-auto py-10 px-5">
+            {/* Icon + heading */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+                <RiBuildingLine size={30} className="text-primary" />
+              </div>
+              <h1 className="text-[22px] font-extrabold text-foreground mb-2">Create Your Organization</h1>
+              <p className="text-[14px] text-muted-foreground leading-relaxed">
+                Set up your business presence on Kalam — broadcast to followers, manage your team, and build your Hedera identity.
+              </p>
+            </div>
 
-            <div className="text-left space-y-3">
+            {/* Form fields */}
+            <div className="space-y-4">
+              {/* Name — required */}
               <div>
-                <label htmlFor="org-name" className="block text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
-                  Organization Name
+                <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[.05em] mb-1.5 block">
+                  Organization Name <span className="text-[#e0245e]">*</span>
                 </label>
                 <input
-                  id="org-name"
                   type="text"
                   value={createName}
                   onChange={(e) => setCreateName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && void handleCreateOrg()}
                   placeholder="Acme Corp."
-                  className="w-full h-[42px] rounded-full border border-border bg-white/[0.04] px-4 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors"
+                  className="w-full h-[44px] rounded-[10px] border border-border bg-white/[0.04] px-4 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors"
                 />
               </div>
 
-              {createError && (
-                <p className="text-[12px] text-[#e0245e]">{createError}</p>
-              )}
+              {/* Category — optional */}
+              <div>
+                <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[.05em] mb-1.5 block">
+                  Category <span className="text-muted-foreground/40 font-normal normal-case">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={newOrgCategory}
+                  onChange={(e) => setNewOrgCategory(e.target.value)}
+                  placeholder="e.g. Finance, Technology, Healthcare"
+                  className="w-full h-[44px] rounded-[10px] border border-border bg-white/[0.04] px-4 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors"
+                />
+              </div>
 
-              <button
-                type="button"
-                onClick={() => void handleCreateOrg()}
-                disabled={isCreating || !createName.trim()}
-                className="w-full h-[42px] rounded-full bg-primary text-primary-foreground font-semibold text-[15px] disabled:opacity-50 transition-opacity hover:opacity-90"
-              >
-                {isCreating ? 'Creating…' : 'Create Organization'}
-              </button>
+              {/* Website — optional */}
+              <div>
+                <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[.05em] mb-1.5 block">
+                  Website <span className="text-muted-foreground/40 font-normal normal-case">(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  value={newOrgWebsite}
+                  onChange={(e) => setNewOrgWebsite(e.target.value)}
+                  placeholder="https://yourorg.com"
+                  className="w-full h-[44px] rounded-[10px] border border-border bg-white/[0.04] px-4 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors"
+                />
+              </div>
+
+              {/* Bio — optional */}
+              <div>
+                <label className="text-[12px] font-semibold text-muted-foreground uppercase tracking-[.05em] mb-1.5 block">
+                  Description <span className="text-muted-foreground/40 font-normal normal-case">(optional)</span>
+                </label>
+                <textarea
+                  value={newOrgBio}
+                  onChange={(e) => setNewOrgBio(e.target.value)}
+                  placeholder="What does your organization do?"
+                  rows={3}
+                  className="w-full rounded-[10px] border border-border bg-white/[0.04] px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors resize-none"
+                />
+              </div>
             </div>
+
+            {createError && (
+              <p className="text-[13px] text-[#e0245e] mt-3">{createError}</p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => void handleCreate()}
+              disabled={!createName.trim() || isCreating}
+              className="w-full h-[50px] rounded-full bg-primary text-primary-foreground font-bold text-[15px] mt-6 disabled:opacity-40 transition-opacity hover:opacity-90"
+            >
+              {isCreating ? 'Creating…' : 'Create Organization'}
+            </button>
           </div>
         </div>
       </div>
