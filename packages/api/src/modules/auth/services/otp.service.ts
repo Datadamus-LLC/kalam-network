@@ -32,7 +32,7 @@ export class OtpService {
   /**
    * Generate a 6-digit OTP for the given identifier (email or phone).
    * Stores in Redis with 5-minute TTL.
-   * In HACKATHON MODE, logs the OTP via NestJS Logger.
+   * In development mode (NODE_ENV=development), logs the OTP via NestJS Logger.
    */
   async generateOtp(
     identifier: string,

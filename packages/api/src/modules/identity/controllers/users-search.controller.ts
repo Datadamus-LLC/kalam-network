@@ -35,8 +35,8 @@ interface ApiResponse<T> {
  * - Finding people to follow
  * - Mentioning users in posts
  *
- * For hackathon: LIKE query on displayName + hederaAccountId + email fallbacks.
- * For production: would integrate Meilisearch or Elasticsearch.
+ * Uses PostgreSQL ILIKE on displayName, username, and hederaAccountId.
+ * Consider Meilisearch or Elasticsearch for production at scale.
  *
  * Reference: tasks/phase-1-identity/P1-T12-profile-crud.md
  */
