@@ -160,9 +160,11 @@ export default function DiscoverPage() {
                             <OrgBadge size="sm" className="flex-shrink-0" />
                           )}
                         </p>
-                        <p className="text-[12px] text-muted-foreground font-mono truncate">
-                          {user.username ? `@${user.username}` : user.hederaAccountId}
-                        </p>
+                        {user.username && (
+                          <p className="text-[12px] text-muted-foreground font-mono truncate">
+                            @{user.username}
+                          </p>
+                        )}
                       </div>
                     </button>
                     {!isOwnProfile && (

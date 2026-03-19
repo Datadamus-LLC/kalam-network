@@ -202,13 +202,13 @@ export function NewConversationDialog({
                   className="flex items-center gap-1.5 bg-white/[0.08] border border-white/[0.12] rounded-full px-3 py-1"
                 >
                   <span className="text-[13px] font-semibold text-foreground">
-                    {p.displayName ?? p.hederaAccountId}
+                    {p.displayName ?? 'Anonymous'}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleRemoveParticipant(p.hederaAccountId)}
                     className="text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label={`Remove ${p.displayName ?? p.hederaAccountId}`}
+                    aria-label={`Remove ${p.displayName ?? 'Anonymous'}`}
                   >
                     <RiCloseLine size={14} />
                   </button>
@@ -246,15 +246,12 @@ export function NewConversationDialog({
                     >
                       <div className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center flex-shrink-0">
                         <span className="text-[13px] font-bold text-foreground">
-                          {(user.displayName ?? user.hederaAccountId).charAt(0).toUpperCase()}
+                          {(user.displayName ?? 'A').charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-semibold text-foreground truncate">
                           {user.displayName ?? 'Anonymous'}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground font-mono truncate">
-                          {user.hederaAccountId}
                         </p>
                       </div>
                     </button>

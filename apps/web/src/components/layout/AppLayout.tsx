@@ -92,17 +92,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/settings', label: 'Settings', icon: RiSettings4Line },
   ];
 
-  const userInitial = (user?.displayName ?? user?.hederaAccountId ?? 'U')[0]?.toUpperCase() ?? 'U';
-  // Format Hedera account IDs for the sidebar handle
-  const formatHandle = (id: string) => {
-    if (/^\d+\.\d+\.\d{4,}$/.test(id)) {
-      const parts = id.split('.');
-      const last = parts[2] ?? '';
-      return `@${parts[0]}.${parts[1]}.${last.slice(0, 3)}\u2026${last.slice(-3)}`;
-    }
-    return `@${id}`;
-  };
-  const userHandle = user?.username ? `@${user.username}` : (user?.hederaAccountId ? formatHandle(user.hederaAccountId) : '');
+  const userInitial = (user?.displayName ?? 'U')[0]?.toUpperCase() ?? 'U';
+  // Only show @username handle — never expose raw Hedera account IDs in the sidebar
+  const userHandle = user?.username ? `@${user.username}` : null;
 
   return (
     <div className="min-h-screen bg-background pt-2">
@@ -170,11 +162,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
-                    {user?.displayName ?? 'User'}
+                    {user?.displayName ?? 'Anonymous'}
                   </p>
-                  <p className="text-[12px] text-muted-foreground truncate leading-tight">
-                    {userHandle}
-                  </p>
+                  {userHandle && (
+                    <p className="text-[12px] text-muted-foreground truncate leading-tight">
+                      {userHandle}
+                    </p>
+                  )}
                 </div>
                 <RiMoreFill size={16} className="text-muted-foreground flex-shrink-0" />
               </button>

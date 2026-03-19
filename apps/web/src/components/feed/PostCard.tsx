@@ -87,16 +87,6 @@ export function PostCard({
   // Display name: use displayName if set, otherwise show "Anonymous"
   // (never expose raw account IDs as the primary display name)
   const authorName = author.displayName || 'Anonymous';
-  // Keep account ID for subtitle/link — formatted short form
-  const authorIdShort = (() => {
-    const id = author.accountId;
-    if (/^\d+\.\d+\.\d{4,}$/.test(id)) {
-      const parts = id.split('.');
-      const last = parts[2] ?? '';
-      return `${parts[0]}.${parts[1]}.${last.slice(0, 3)}…${last.slice(-3)}`;
-    }
-    return id.length > 12 ? `${id.slice(0, 7)}…${id.slice(-3)}` : id;
-  })();
   const { user } = useAuth();
   const currentAccountId = user?.hederaAccountId ?? '';
 
@@ -267,16 +257,12 @@ export function PostCard({
             <VerifiedBadge tier={author.badgeTier} size="sm" />
           )}
 
-          {/* Show @username or short account ID as secondary identifier */}
-          {author.username ? (
+          {/* Show @username as secondary identifier — never show account ID */}
+          {author.username && (
             <span className="text-[12px] text-muted-foreground truncate">
               @{author.username}
             </span>
-          ) : !author.displayName ? (
-            <span className="text-[12px] text-muted-foreground font-mono truncate">
-              {authorIdShort}
-            </span>
-          ) : null}
+          )}
 
           <span className="text-[13px] text-muted-foreground truncate">
             · {formatRelativeTime(createdAt)}

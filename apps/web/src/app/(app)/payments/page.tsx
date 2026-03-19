@@ -556,7 +556,7 @@ export default function PaymentsPage() {
                       (p) => p.accountId !== user?.hederaAccountId,
                     );
                     if (!other) return null;
-                    const name = other.displayName ?? other.accountId;
+                    const name = other.displayName ?? 'Unknown';
                     return (
                       <button
                         key={c.hcsTopicId}
@@ -578,7 +578,6 @@ export default function PaymentsPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-semibold text-foreground truncate">{name}</p>
-                          <p className="text-[11px] text-muted-foreground font-mono truncate">{other.accountId}</p>
                         </div>
                         <span className="text-[12px] text-primary font-semibold flex-shrink-0">Send</span>
                       </button>

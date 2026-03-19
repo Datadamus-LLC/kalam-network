@@ -295,7 +295,7 @@ export default function OrganizationPage() {
       if (!member) return;
       const memberName = member.username
         ? `@${member.username}`
-        : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
+        : member.displayName ?? `Member ${member.userId.slice(0, 8)}…`;
       setPendingRemoval({ userId, memberName });
     },
     [members],
@@ -330,7 +330,7 @@ export default function OrganizationPage() {
       if (!member || member.role === newRole) return;
       const memberName = member.username
         ? `@${member.username}`
-        : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
+        : member.displayName ?? `Member ${member.userId.slice(0, 8)}…`;
       setPendingRoleChange({
         userId,
         memberName,
@@ -718,7 +718,7 @@ export default function OrganizationPage() {
                   <div key={m.userId} className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-white/[0.08] flex items-center justify-center text-[11px] font-bold text-foreground flex-shrink-0">
-                        {(m.displayName || m.hederaAccountId || '?')[0]?.toUpperCase()}
+                        {(m.displayName || m.username || '?')[0]?.toUpperCase()}
                       </div>
                       <span className="text-[13px] font-medium text-foreground">
                         {m.username ? `@${m.username}` : (m.displayName ?? 'Member')}
@@ -801,12 +801,10 @@ export default function OrganizationPage() {
                 {members.map((member) => {
                   const primaryName = member.username
                     ? `@${member.username}`
-                    : member.displayName ?? member.hederaAccountId ?? `User ${member.userId.slice(0, 8)}…`;
+                    : member.displayName ?? `Member ${member.userId.slice(0, 8)}…`;
                   const subLine = member.username
-                    ? (member.displayName ?? member.hederaAccountId)
-                    : member.hederaAccountId && !member.displayName
-                      ? null
-                      : member.hederaAccountId ?? null;
+                    ? member.displayName ?? null
+                    : null;
                   return (
                     <div key={member.userId} className="flex items-center justify-between px-4 py-3 hover:bg-white/[0.018] transition-colors">
                       <div className="min-w-0">

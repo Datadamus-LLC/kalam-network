@@ -20,14 +20,14 @@ function getConversationDisplayName(
   if (conversation.type === 'group') {
     const names = conversation.participants
       .filter((p) => p.accountId !== currentAccountId)
-      .map((p) => p.displayName || p.accountId);
+      .map((p) => p.displayName || 'Unknown');
     return names.join(', ') || 'Group Chat';
   }
 
   const other = conversation.participants.find(
     (p) => p.accountId !== currentAccountId,
   );
-  return other?.displayName || other?.accountId || 'Unknown';
+  return other?.displayName || 'Unknown';
 }
 
 function getAvatarInitial(name: string): string {

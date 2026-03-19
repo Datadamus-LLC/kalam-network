@@ -23,7 +23,7 @@ function getConversationTitle(
   if (conversation.type === 'group') {
     const names = conversation.participants
       .filter((p) => p.accountId !== currentAccountId)
-      .map((p) => p.displayName || p.accountId)
+      .map((p) => p.displayName || 'Unknown')
       .join(', ');
     return names || 'Group Chat';
   }
@@ -32,7 +32,7 @@ function getConversationTitle(
     (p) => p.accountId !== currentAccountId,
   );
 
-  return otherParticipant?.displayName || otherParticipant?.accountId || 'Chat';
+  return otherParticipant?.displayName || 'Chat';
 }
 
 function getParticipantCount(conversation: Conversation): number {
