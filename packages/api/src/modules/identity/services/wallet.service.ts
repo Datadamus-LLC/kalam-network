@@ -332,6 +332,11 @@ export class WalletService {
           `encryptionPublicKey set`,
       );
 
+      // Fund new account with 50 TMUSD (5000 smallest units at 2 decimals).
+      // Non-fatal: if the operator has no TMUSD or the account isn't associated,
+      // we log a warning and continue — the user can still use the platform.
+      await this.fundWithTmusd(hederaAccountId, user.id);
+
       return {
         hederaAccountId,
         publicKey: vaultResult.publicKey,
@@ -357,6 +362,34 @@ export class WalletService {
    * Called during wallet creation so users can post immediately after
    * creating their wallet, even before KYC is complete.
    */
+  /**
+   * Transfer 50 TMUSD (5000 smallest units) from the operator to a new user account.
+   * The operator must already be associated with TMUSD and hold sufficient balance.
+   * SDK-created accounts have maxAutomaticTokenAssociations=10 so TMUSD auto-associates.
+   * Tamam-provisioned accounts may also support auto-association; if not, this logs a warning.
+   */
+  private async fundWithTmusd(hederaAccountId: string, userId: string): Promise<void> {
+    const tmusdTokenId = this.configService.get<string>("tmusd.tokenId");
+    const operatorId = this.hederaService.getOperatorId();
+
+    if (!tmusdTokenId) {
+      this.logger.warn(`TMUSD_TOKEN_ID not configured — skipping faucet for user ${userId}`);
+      return;
+    }
+
+    try {
+      // 50 TMUSD at 2 decimal places = 5000 smallest units
+      await this.hederaService.transferHts(operatorId, hederaAccountId, tmusdTokenId, 5000);
+      this.logger.log(`Funded user ${userId} (${hederaAccountId}) with 50 TMUSD`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `TMUSD faucet skipped for user ${userId} (${hederaAccountId}): ${message}. ` +
+        `Ensure operator is associated with TMUSD and holds sufficient balance.`,
+      );
+    }
+  }
+
   private async createUserTopics(
     hederaAccountId: string,
     userId: string,

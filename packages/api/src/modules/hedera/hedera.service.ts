@@ -4,6 +4,8 @@ import {
   Client,
   PrivateKey,
   PublicKey,
+  AccountId,
+  TokenId,
   AccountCreateTransaction,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
@@ -11,6 +13,7 @@ import {
   TokenMintTransaction,
   TokenFreezeTransaction,
   TokenWipeTransaction,
+  TokenAssociateTransaction,
   TransferTransaction,
   Hbar,
 } from "@hashgraph/sdk";
@@ -416,6 +419,52 @@ export class HederaService implements OnModuleDestroy {
     );
 
     return this.transferHbar(operatorId, accountId, amount);
+  }
+
+  /**
+   * Associate an HTS token with an account using the operator key.
+   * Only works when the operator IS the account being associated
+   * (i.e. associating a token with the operator's own account).
+   */
+  async associateToken(accountId: string, tokenId: string): Promise<void> {
+    const client = this.ensureClient();
+    const transaction = new TokenAssociateTransaction()
+      .setAccountId(AccountId.fromString(accountId))
+      .setTokenIds([TokenId.fromString(tokenId)])
+      .setMaxTransactionFee(new Hbar(2))
+      .freezeWith(client);
+
+    const response = await transaction.execute(client);
+    await response.getReceipt(client);
+    this.logger.log(`Associated token ${tokenId} with account ${accountId}`);
+  }
+
+  /**
+   * Transfer HTS fungible tokens from the operator account to a recipient.
+   * The operator must already be associated with the token.
+   * Amount is in the token's smallest units (e.g. 5000 = 50 TMUSD at 2 decimals).
+   */
+  async transferHts(
+    fromAccountId: string,
+    toAccountId: string,
+    tokenId: string,
+    amount: number,
+  ): Promise<string> {
+    const client = this.ensureClient();
+    const transaction = new TransferTransaction()
+      .addTokenTransfer(tokenId, fromAccountId, -amount)
+      .addTokenTransfer(tokenId, toAccountId, amount)
+      .setMaxTransactionFee(new Hbar(2))
+      .setTransactionMemo("Hedera Social Platform — TMUSD faucet")
+      .freezeWith(client);
+
+    const response = await transaction.execute(client);
+    await response.getReceipt(client);
+    const txId = response.transactionId.toString();
+    this.logger.log(
+      `Transferred ${amount} smallest units of ${tokenId} from ${fromAccountId} to ${toAccountId}: ${txId}`,
+    );
+    return txId;
   }
 
   /**

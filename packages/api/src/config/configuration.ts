@@ -112,6 +112,11 @@ export default () => {
       baseUrl: env.HASHSCAN_BASE_URL,
     },
 
+    // TMUSD HTS token
+    tmusd: {
+      tokenId: env.TMUSD_TOKEN_ID,
+    },
+
     // Resend email delivery
     resend: {
       apiKey: env.RESEND_API_KEY,

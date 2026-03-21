@@ -18,6 +18,7 @@ import {
   WalletStatusResult,
   EncryptionKeyResult,
 } from "../services/wallet.service";
+import { HederaService } from "../../hedera/hedera.service";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import type { JwtPayload } from "../../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "../../auth/decorators/current-user.decorator";
@@ -57,6 +58,7 @@ export class WalletController {
     private readonly walletService: WalletService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly hederaService: HederaService,
   ) {}
 
   /**
@@ -205,6 +207,40 @@ export class WalletController {
     return {
       success: true,
       data: { encryptedBackup },
+      error: null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * POST /api/v1/wallet/operator/associate-tmusd
+   *
+   * One-time setup: associate the platform operator account with the TMUSD token
+   * so it can hold and transfer TMUSD to new users.
+   * Protected by JWT — call this once with any valid user token after deployment.
+   */
+  @Post("operator/associate-tmusd")
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async associateOperatorWithTmusd(): Promise<ApiResponse<{ associated: boolean }>> {
+    const tmusdTokenId = this.configService.get<string>("tmusd.tokenId");
+    const operatorId = this.hederaService.getOperatorId();
+
+    if (!tmusdTokenId) {
+      return {
+        success: false,
+        data: null,
+        error: { code: "TMUSD_NOT_CONFIGURED", message: "TMUSD_TOKEN_ID is not set" },
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    await this.hederaService.associateToken(operatorId, tmusdTokenId);
+    this.logger.log(`Operator ${operatorId} associated with TMUSD token ${tmusdTokenId}`);
+
+    return {
+      success: true,
+      data: { associated: true },
       error: null,
       timestamp: new Date().toISOString(),
     };
